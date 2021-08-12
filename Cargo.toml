@@ -1,0 +1,6 @@
+[workspace]
+members = ["agent", "protocol", "sealed-boxes", "util"]
+
+[profile.release]
+codegen-units = 1
+lto = true
