@@ -49,12 +49,8 @@ pub enum Server<'a> {
     /// Tell the client to decrypt the given ciphertext.
     ///
     /// When clients authenticate, we send them a decrypt request
-    /// so they prove to use that they posses the private key that
+    /// so they prove to us that they posses the private key that
     /// corresponds to the public key that was used for encryption.
-    ///
-    /// NB: We box the cipher text as authentication happens ideally
-    /// only once per connection and by allocating once we save 40
-    /// bytes in every other message.
     #[n(2)] Challenge {
         #[n(0)] text: Box<CipherText>
     },
@@ -66,6 +62,7 @@ pub enum Server<'a> {
     ///
     /// Control connections can not expect this message.
     #[n(3)] DataAddress {
+        /// The message Id this answer corresponds to.
         #[n(0)] re: Id,
         /// Some opaque value to report back to the gateway.
         #[b(1)] data: Opaque<'a>
@@ -81,11 +78,13 @@ pub enum Server<'a> {
         #[b(2)] auth: Authorization<'a>
     },
 
+    /// Connect to the provided address and report back the result.
     #[n(5)] TestConnect {
         /// The internal address to test.
         #[b(0)] int: Address<'a>
     },
 
+    /// Terminate the connection.
     #[n(6)] Terminate {
         #[n(0)] reason: Reason
     }
@@ -116,7 +115,9 @@ pub enum Client<'a> {
     ///
     /// Contains the decrypted plaintext value.
     #[n(3)] Response {
+        /// The original message Id this answer corresponds to.
         #[n(0)] re: Id,
+        /// The decrypted plaintext.
         #[b(1)] text: Cow<'a, ByteSlice>
     },
 
@@ -127,6 +128,7 @@ pub enum Client<'a> {
     /// the external peer address it is awaiting traffic on to
     /// relay to its internal endpoint.
     #[n(4)] Established  {
+        /// The original message Id this answer corresponds to.
         #[n(0)] re: Id,
         /// Some opaque value to report back to the gateway.
         #[b(1)] data: Opaque<'a>
@@ -136,7 +138,7 @@ pub enum Client<'a> {
     #[n(5)]
     #[cbor(map)]
     Error {
-        /// The message this error responds to.
+        /// The original message this error responds to.
         #[n(0)] re: Id,
         /// The optional error code.
         #[n(1)] code: Option<ErrorCode>,
@@ -253,8 +255,11 @@ impl fmt::Display for Address<'_> {
 
 #[derive(Debug, Decode, Encode)]
 pub struct Opaque<'a> {
+    /// The encryption key identifier.
     #[n(0)] pub key_id: u64,
+    /// A message nonce.
     #[n(1)] pub nonce: crypto::Nonce,
+    /// The encrypted payload.
     #[b(2)] pub value: Cow<'a, ByteSlice>
 }
 

@@ -85,6 +85,7 @@ pub fn decode_crypto_key<'de, D: Deserializer<'de>>(d: D) -> Result<crypto::Key,
     decode_base64_array(d).map(crypto::Key::from)
 }
 
+/// Decode PEM-encoded private key.
 pub fn decode_private_key<'de, D: Deserializer<'de>>(d: D) -> Result<PrivateKey, D::Error> {
     let s = <Cow<'de, str>>::deserialize(d)?;
     let v = pemfile::pkcs8_private_keys(&mut s.as_bytes())
@@ -101,6 +102,7 @@ pub fn decode_private_key<'de, D: Deserializer<'de>>(d: D) -> Result<PrivateKey,
     }
 }
 
+/// Decode PEM-encoded certificates.
 pub fn decode_certificates<'de, D: Deserializer<'de>>(d: D) -> Result<NonEmpty<Certificate>, D::Error> {
     let s = <Cow<'de, str>>::deserialize(d)?;
     let v = pemfile::certs(&mut s.as_bytes())
@@ -110,6 +112,7 @@ pub fn decode_certificates<'de, D: Deserializer<'de>>(d: D) -> Result<NonEmpty<C
     NonEmpty::try_from(v).map_err(|_| Error::custom("no certificate found"))
 }
 
+/// Decode optional PEM-encoded certificates.
 pub fn decode_opt_certificates<'de, D: Deserializer<'de>>(d: D) -> Result<Option<NonEmpty<Certificate>>, D::Error> {
     if let Some(s) = <Option<Cow<'de, str>>>::deserialize(d)? {
         let v = pemfile::certs(&mut s.as_bytes())
@@ -122,17 +125,5 @@ pub fn decode_opt_certificates<'de, D: Deserializer<'de>>(d: D) -> Result<Option
     } else {
         Ok(None)
     }
-}
-
-pub fn decode_nonempty<'de, T, D>(d: D) -> Result<NonEmpty<T>, D::Error>
-where
-    T: Deserialize<'de>,
-    D: Deserializer<'de>
-{
-    let v = <Vec<T>>::deserialize(d)?;
-    if v.is_empty() {
-        return Err(Error::custom("attempt to construct an empty `NonEmpty`"))
-    }
-    Ok(NonEmpty(v))
 }
 

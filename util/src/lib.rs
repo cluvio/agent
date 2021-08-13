@@ -10,6 +10,7 @@ use std::fmt;
 use std::convert::TryFrom;
 use std::ops::Deref;
 
+/// A non-empty vector.
 #[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize)]
 #[serde(transparent)]
 pub struct NonEmpty<T>(Vec<T>);

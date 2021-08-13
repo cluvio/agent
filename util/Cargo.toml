@@ -1,7 +1,6 @@
 [package]
 name    = "util"
 version = "0.1.0"
-authors = ["Toralf Wittner <toralf@cluvio.com>"]
 edition = "2018"
 
 [dependencies]
