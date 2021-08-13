@@ -3,7 +3,7 @@
 set -e
 
 function define_vars {
-	RELEASE_URL=https://github.com/cluvio/gateway/releases/latest
+	RELEASE_URL=https://github.com/cluvio/agent/releases/latest
 	CONFIG_FILE=agent.toml
 
 	case "$1" in
@@ -25,11 +25,10 @@ function define_vars {
 
 function usage {
     cat <<- EOF
-		Usage: $(basename $0) [-l <location>] [-v <version>] [-s]
+		Usage: $(basename $0) [-l <location>] [-v <version>]
 		where
 		    -l <location> defaults to "eu"
 		    -v <version>  defaults to the latest one available
-		    -s            install system-wide (requires root)
 	EOF
 }
 
@@ -43,7 +42,7 @@ function install {
     if [ -f "$EXECUTABLE" ]; then
         echo -n "$EXECUTABLE already exists. Would you like to upgrade? [y/N]: "
         read answer
-        if [ ${answer:-N,,} = "y" ]; then
+        if [ "${answer,,}" = "y" ]; then
             upgrade $os $location $version $path
         fi
         return
@@ -165,7 +164,7 @@ function linux_post_install {
 
     echo -en "Would you like to setup the agent for use with systemd? [y/N]: "
     read answer
-    if [ ${answer:-N,,} = "n" ]; then
+    if [ "${answer,,}" != "y" ]; then
         cat <<- EOF
 			Once the agent has been registered with Cluvio it can be started with:
 
@@ -179,7 +178,7 @@ function linux_post_install {
 
 	echo -n "Unit file cluvio-agent.service created. Would you like enable the service? [y/N]: "
 	read answer
-    if [ ${answer:-N,,} = "n" ]; then
+    if [ "${answer,,}" != "y" ]; then
 		cat <<- EOF
 			Once the agent has been registered with Cluvio the service can be started with:
 
@@ -237,9 +236,6 @@ while getopts ":sl:v:p:" o; do
         p)
             path=$OPTARG
             ;;
-		s)
-			system="system"
-			;;
         *)
             usage
             exit 1
@@ -252,15 +248,27 @@ shift $((OPTIND-1))
 operating_system
 os=$RETURN
 wd=$(mktemp -d -t cluvio-XXXXX)
-system=${system:-user}
 
-if [ $system = "system" ]; then
-	if [ "0" != "$(id -u)" ]; then
-		echo "-s requires root permissions"
-		exit 1
-	fi
-fi
+echo -n "Install the Cluvio agent for the current user [u] or system-wide [s]? [U/s]: "
+read answer
 
-define_vars $system
-(cd $wd && install $system $os "${location:-eu}" $version $path)
+case "${answer,,}" in
+    "s")
+        if [ "0" != "$(id -u)" ]; then
+            echo "A system-wide installation requires root permissions."
+            exit 1
+        fi
+        mode="system"
+        ;;
+    "u" | "")
+        mode="user"
+        ;;
+    *)
+        echo "Invalid input ${answer}."
+        exit 1
+        ;;
+esac
+
+define_vars $mode
+(cd $wd && install $mode $os "${location:-eu}" $version $path)
 

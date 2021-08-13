@@ -13,7 +13,7 @@ build-linux-musl:
 	strip build/bin/agent
 	mv build/bin/agent build/cluvio-agent
 	tar caf dist/agent-eu-$(VERSION)-x86_64-linux.tar.xz -C build/ cluvio-agent
-	cd dist && sha256sum *.tar.xz >> CHECKSUMS
+	cd dist && sha256sum *.tar.xz > CHECKSUMS
 
 clean:
 	rm -rf build/ dist/
