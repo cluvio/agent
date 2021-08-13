@@ -1,0 +1,44 @@
+name: Compile and test workspace.
+
+on:
+  push:
+    branches: [master, develop]
+  pull_request:
+    branches: [master, develop]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository.
+      uses: actions/checkout@v2
+
+    - name: Install MUSL
+      run: sudo apt install -y musl-dev musl-tools
+
+    - name: Install MUSL target
+      run: rustup target add x86_64-unknown-linux-musl
+
+    - name: Restore cargo directories from cache.
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Restore cargo target directory from cache.
+      uses: actions/cache@v2
+      with:
+        path: target
+        key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Test workspace.
+      run: cargo test --all --all-features
+
+    - name: Package agent.
+      run: make build-linux-musl
+
