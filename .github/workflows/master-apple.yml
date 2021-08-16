@@ -1,0 +1,22 @@
+name: Apple Darwin build
+
+on:
+  push:
+    branches: [master]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+    - name: Checkout repository.
+      uses: actions/checkout@v2
+
+    - name: Install Apple Darwin target
+      run: rustup target add x86_64-apple-darwin
+
+    - name: Package agent.
+      run: build-apple-darwin
+
