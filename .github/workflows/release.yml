@@ -75,5 +75,5 @@ jobs:
       run: |
         (cd dist && sha256sum *.tar.* > CHECKSUMS)
         gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
-        gh release create --draft "v${{ env.AGENT_VERSION }}" dist/*
+        gh release create -d -t "v${{ env.AGENT_VERSION }}" -f CHANGELOG.md "v${{ env.AGENT_VERSION }}" dist/*
 
