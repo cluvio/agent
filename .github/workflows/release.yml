@@ -13,7 +13,6 @@ jobs:
     steps:
     - name: Checkout repository.
       uses: actions/checkout@v2
-      run: echo AGENT_VERSION=$(make version) >> $GITHUB_ENV
 
     - name: Install MUSL
       run: sudo apt install -y musl-dev musl-tools
@@ -23,6 +22,8 @@ jobs:
 
     - name: Package agent.
       run: make build-linux-musl
+
+    - run: echo AGENT_VERSION=$(make version) >> $GITHUB_ENV
 
     - uses: actions/upload-artifact@v1
       with:
@@ -35,13 +36,14 @@ jobs:
     steps:
     - name: Checkout repository.
       uses: actions/checkout@v2
-      run: echo AGENT_VERSION=$(make version) >> $GITHUB_ENV
 
     - name: Install Apple Darwin target
       run: rustup target add x86_64-apple-darwin
 
     - name: Package agent.
       run: make build-apple-darwin
+
+    - run: echo AGENT_VERSION=$(make version) >> $GITHUB_ENV
 
     - uses: actions/upload-artifact@v1
       with:
