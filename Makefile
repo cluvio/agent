@@ -3,7 +3,7 @@ VERSION = 0.1.0
 .PHONY: build-linux-musl build-apple-darwin clean version
 
 version:
-	echo $(VERSION)
+	@echo $(VERSION)
 
 build-linux-musl:
 	mkdir -p build dist
