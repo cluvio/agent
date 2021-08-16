@@ -71,7 +71,9 @@ jobs:
         path: dist/
 
     - name: Create release.
+      shell: bash
       run: |
         (cd dist && sha256sum *.tar.* > CHECKSUMS)
+        gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
         gh release create --draft "v${{ env.AGENT_VERSION }}" dist/*
 
