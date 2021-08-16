@@ -73,5 +73,5 @@ jobs:
     - name: Create release.
       run: |
         (cd dist && sha256sum *.tar.* > CHECKSUMS)
-        gh release --draft create "v${{ env.AGENT_VERSION }}" dist/*
+        gh release create --draft "v${{ env.AGENT_VERSION }}" dist/*
 
