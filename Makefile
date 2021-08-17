@@ -1,6 +1,10 @@
 VERSION = 0.1.0
 
-.PHONY: build-aarch64-unknown-linux-musl build-x86_64-unknown-linux-musl build-apple-darwin clean version
+.PHONY: build-aarch64-unknown-linux-musl \
+	build-x86_64-unknown-linux-musl \
+	build-x86_64-apple-darwin \
+	build-aarch64-apple-darwin \
+	version
 
 version:
 	@echo $(VERSION)
@@ -44,6 +48,20 @@ build-x86_64-apple-darwin: clean
 	strip build/bin/agent
 	mv build/bin/agent build/cluvio-agent
 	tar caf dist/agent-eu-$(VERSION)-x86_64-apple-darwin.tar.gz -C build/ cluvio-agent
+
+build-aarch64-apple-darwin: export SDKROOT = $(shell xcrun -sdk macosx11.1 --show-sdk-path)
+build-aarch64-apple-darwin: export MACOSX_DEPLOYMENT_TARGET = $(shell xcrun -sdk macosx11.1 --show-sdk-platform-version)
+build-aarch64-apple-darwin: clean
+	mkdir -p build dist
+	cargo install \
+		--target aarch64-apple-darwin \
+		--no-track \
+		--locked \
+		--root build/ \
+		--path agent
+	strip build/bin/agent
+	mv build/bin/agent build/cluvio-agent
+	tar caf dist/agent-eu-$(VERSION)-aarch64-apple-darwin.tar.gz -C build/ cluvio-agent
 
 clean:
 	rm -rf build/ dist/
