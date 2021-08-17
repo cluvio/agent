@@ -29,7 +29,7 @@ build-aarch64-unknown-linux-musl: clean
 		--locked \
 		--root build/ \
 		--path agent
-	strip build/bin/agent
+	aarch64-linux-gnu-strip build/bin/agent
 	mv build/bin/agent build/cluvio-agent
 	tar caf dist/agent-eu-$(VERSION)-aarch64-unknown-linux-musl.tar.xz -C build/ cluvio-agent
 
