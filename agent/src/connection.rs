@@ -16,10 +16,17 @@ use tokio_util::compat::{TokioAsyncReadCompatExt, TokioAsyncWriteCompatExt};
 use util::io::{send, recv};
 
 // TCP keepalive settings used for data transfer connections.
+#[cfg(unix)]
 const KEEPALIVE_SETTINGS: TcpKeepalive = TcpKeepalive::new()
-    .with_time(Duration::from_secs(30))
-    .with_interval(Duration::from_secs(10))
-    .with_retries(3);
+        .with_time(Duration::from_secs(30))
+        .with_interval(Duration::from_secs(10))
+        .with_retries(3);
+
+// TCP keepalive settings used for data transfer connections.
+#[cfg(windows)]
+const KEEPALIVE_SETTINGS: TcpKeepalive = TcpKeepalive::new()
+        .with_time(Duration::from_secs(30))
+        .with_interval(Duration::from_secs(10));
 
 /// An outbound data connection.
 #[derive(Debug)]
