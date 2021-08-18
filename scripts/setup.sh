@@ -35,15 +35,16 @@ function usage {
 function install {
 	local system="$1"
     local os="$2"
-    local location="$3"
-    local version="$4"
-    local path="$5"
+    local cpu="$3"
+    local location="$4"
+    local version="$5"
+    local path="$6"
 
     if [ -f "$EXECUTABLE" ]; then
         echo -n "$EXECUTABLE already exists. Would you like to upgrade? [y/N]: "
         read answer
         if [ "${answer,,}" = "y" ]; then
-            upgrade $os $location $version $path
+            upgrade $os $arch $location $version $path
         fi
         return
     fi
@@ -58,7 +59,8 @@ function install {
         version=$RETURN
     fi
 
-    local archive="agent-$location-$version-x86_64-$os.tar.xz"
+    archive_name $os $cpu $version $location
+    local archive="$RETURN"
     download $archive $path
     sha256sum --quiet -c CHECKSUMS
 
@@ -89,16 +91,18 @@ function install {
 
 function upgrade {
     local os="$1"
-    local location="$2"
-    local version="$3"
-    local path="$4"
+    local cpu="$2"
+    local location="$3"
+    local version="$4"
+    local path="$5"
 
     if [ -z $version ]; then
         latest_version
         version=$RETURN
     fi
 
-    local archive="agent-$location-$version-x86_64-$os.tar.xz"
+    archive_name $os $cpu $version $location
+    local archive="$RETURN"
     download $archive $path
     sha256sum --quiet -c CHECKSUMS
 
@@ -214,7 +218,7 @@ function operating_system {
             os=linux
             ;;
         Darwin)
-            os=macosx
+            os=darwin
             ;;
         *)
             echo "operating system $os is not supported"
@@ -223,6 +227,45 @@ function operating_system {
     esac
 
     RETURN=$os
+}
+
+function cpu_arch {
+    local cpu="$(uname -m)"
+
+    case "$cpu" in
+        x86_64 | x86-64 | x64 | amd64)
+            cpu=x86_64
+            ;;
+        aarch64 | arm64)
+            cpu=aarch64
+            ;;
+        *)
+            echo "cpu type $cpu is not supported"
+            exit 1
+            ;;
+    esac
+
+    RETURN=$cpu
+}
+
+function archive_name {
+    local os="$1"
+    local cpu="$2"
+    local version="$3"
+    local location="$4"
+
+    case "$os" in
+        "linux")
+            RETURN="agent-$location-$version-$cpu-unknown-linux-musl.tar.xz"
+            ;;
+        "darwin")
+            RETURN="agent-$location-$version-$cpu-apple-darwin.tar.gz"
+            ;;
+        *)
+            echo "unknown operating system $os"
+            exit 1
+            ;;
+    esac
 }
 
 while getopts ":sl:v:p:" o; do
@@ -247,6 +290,10 @@ shift $((OPTIND-1))
 
 operating_system
 os=$RETURN
+
+cpu_arch
+cpu=$RETURN
+
 wd=$(mktemp -d -t cluvio-XXXXX)
 
 echo -n "Install the Cluvio agent for the current user [u] or system-wide [s]? [U/s]: "
@@ -270,5 +317,5 @@ case "${answer,,}" in
 esac
 
 define_vars $mode
-(cd $wd && install $mode $os "${location:-eu}" $version $path)
+(cd $wd && install $mode $os $cpu "${location:-eu}" $version $path)
 
