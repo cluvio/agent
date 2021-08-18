@@ -105,6 +105,7 @@ jobs:
       run: make build-x86_64-pc-windows-msvc
 
     - run: echo AGENT_VERSION=$(make version) >> $GITHUB_ENV
+      shell: bash
 
     - uses: actions/upload-artifact@v2
       with:
