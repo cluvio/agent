@@ -92,6 +92,26 @@ jobs:
         path: "dist/agent-eu-${{ env.AGENT_VERSION }}-aarch64-apple-darwin.tar.gz"
         retention-days: 1
 
+  build-x86_64-pc-windows-msvc:
+    runs-on: windows-latest
+    steps:
+    - name: Checkout repository.
+      uses: actions/checkout@v2
+
+    - name: Install Windows target
+      run: rustup target add x86_64-pc-windows-msvc
+
+    - name: Package agent.
+      run: make build-x86_64-pc-windows-msvc
+
+    - run: echo AGENT_VERSION=$(make version) >> $GITHUB_ENV
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: agent-eu-${{ env.AGENT_VERSION }}-x86_64-pc-windows-msvc.zip
+        path: "dist/agent-eu-${{ env.AGENT_VERSION }}-x86_64-pc-windows-msvc.zip"
+        retention-days: 1
+
   release:
     runs-on: ubuntu-latest
     needs:
@@ -99,6 +119,7 @@ jobs:
       - build-aarch64-unknown-linux-musl
       - build-x86_64-apple-darwin
       - build-aarch64-apple-darwin
+      - build-x86_64-pc-windows-msvc
     steps:
     - name: Checkout repository.
       uses: actions/checkout@v2
@@ -125,10 +146,15 @@ jobs:
         name: agent-eu-${{ env.AGENT_VERSION }}-aarch64-apple-darwin.tar.gz
         path: dist/
 
+    - uses: actions/download-artifact@v2
+      with:
+        name: agent-eu-${{ env.AGENT_VERSION }}-x86_64-pc-windows-msvc.zip
+        path: dist/
+
     - name: Create release.
       shell: bash
       run: |
-        (cd dist && sha256sum *.tar.* > CHECKSUMS)
+        (cd dist && sha256sum *.* > CHECKSUMS)
         gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
         gh release create -d -t "v${{ env.AGENT_VERSION }}" -F CHANGELOG.md "v${{ env.AGENT_VERSION }}" dist/*
 
