@@ -9,6 +9,7 @@ use ::serde::Serialize;
 use std::fmt;
 use std::convert::TryFrom;
 use std::ops::Deref;
+use std::str::FromStr;
 
 /// A non-empty vector.
 #[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize)]
@@ -76,3 +77,38 @@ impl fmt::Display for Empty {
 
 impl std::error::Error for Empty {}
 
+#[derive(Clone, Copy, Debug)]
+pub enum Location {
+    Eu
+}
+
+impl fmt::Display for Location {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Location::Eu => f.write_str("eu")
+        }
+    }
+}
+
+/// Error caused by parsing invalid or unknown locations.
+#[derive(Clone, Debug)]
+pub struct InvalidLocation(String);
+
+impl fmt::Display for InvalidLocation {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "invalid location: {}", self.0)
+    }
+}
+
+impl std::error::Error for InvalidLocation {}
+
+impl<'a> FromStr for Location {
+    type Err = InvalidLocation;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "eu" | "EU" | "Eu" => Ok(Location::Eu),
+            _                  => Err(InvalidLocation(s.into()))
+        }
+    }
+}

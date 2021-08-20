@@ -23,15 +23,7 @@ pub struct Options {
     #[structopt(short, long, parse(from_os_str), required_unless_one(&["gen-keypair", "setup"]))]
     pub config: Option<PathBuf>,
 
-    /// Path to write generated config file to.
-    #[structopt(long, parse(from_os_str))]
-    pub setup: Option<PathBuf>,
-
-    /// Print the agent key to stdout.
-    #[structopt(long)]
-    pub show_agent_key: bool,
-
-    /// Log-level format.
+    /// Log-level.
     #[structopt(short, long)]
     pub log: Option<String>,
 

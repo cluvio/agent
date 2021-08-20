@@ -8,7 +8,6 @@ mod error;
 mod tls;
 
 pub mod config;
-pub mod setup;
 
 /// Version of this crate.
 fn version() -> Result<protocol::Version, Error> {
