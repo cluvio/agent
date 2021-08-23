@@ -21,7 +21,7 @@ dependencies = [
  "futures",
  "humantime",
  "ipnet",
- "minicbor",
+ "minicbor 0.11.0",
  "minicbor-io",
  "protocol",
  "quickcheck",
@@ -529,9 +529,15 @@ checksum = "b16bd47d9e329435e309c58469fe0791c2d0d1ba96ec0954152a5ae2b04387dc"
 
 [[package]]
 name = "minicbor"
-version = "0.10.0"
+version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f1f5b98cb843034ca9ca7fd9cbfdd579c674d58fdc4a6015948be5559b52446"
+checksum = "3fb74931969d99aeabd31fdffbcb7dfcc1b4cb07aed2c56480f28ea90dab5cb6"
+
+[[package]]
+name = "minicbor"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c6d5f0c441f12f158d4913a3ff289cb3e390ce5ab308aa3ef6437061aab66caa"
 dependencies = [
  "half",
  "minicbor-derive",
@@ -539,9 +545,9 @@ dependencies = [
 
 [[package]]
 name = "minicbor-derive"
-version = "0.6.4"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "54999f917cd092b13904737e26631aa2b2b88d625db68e4bab461dcd8006c788"
+checksum = "e233a7f8d375ec6da14614bc14eb522f7cbc28d379cf3ec0bb8cf44498315b76"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -557,7 +563,7 @@ dependencies = [
  "futures-core",
  "futures-io",
  "futures-util",
- "minicbor",
+ "minicbor 0.10.1",
 ]
 
 [[package]]
@@ -752,7 +758,7 @@ dependencies = [
 name = "protocol"
 version = "0.1.0"
 dependencies = [
- "minicbor",
+ "minicbor 0.11.0",
  "nohash-hasher",
  "quickcheck",
  "rand_core 0.6.3",
@@ -928,7 +934,7 @@ version = "0.1.0"
 dependencies = [
  "blake2b_simd",
  "crypto_box",
- "minicbor",
+ "minicbor 0.11.0",
  "quickcheck",
  "rand_core 0.6.3",
 ]
@@ -1302,7 +1308,7 @@ dependencies = [
  "chacha20poly1305",
  "futures",
  "humantime",
- "minicbor",
+ "minicbor 0.11.0",
  "minicbor-io",
  "rand_core 0.6.3",
  "sealed-boxes",
