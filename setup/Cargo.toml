@@ -4,12 +4,13 @@ version = "0.1.0"
 edition = "2018"
 
 [dependencies]
-agent        = { path = "../agent" }
+anyhow       = "1.0.43"
 bytes        = "1.0.1"
 crossterm    = "0.21.0"
+dirs         = "3.0.2"
 indoc        = "1.0.3"
 log          = { version = "0.1.25", package = "tracing" }
-reqwest      = { version = "0.11.4", features = ["blocking"] }
+reqwest      = { version = "0.11.4", default-features = false, features = ["rustls-tls", "blocking"] }
 sealed-boxes = { path = "../sealed-boxes" }
 semver       = { version = "1.0.4", features = ["serde"] }
 structopt    = "0.3.21"

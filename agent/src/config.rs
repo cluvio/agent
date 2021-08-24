@@ -18,10 +18,15 @@ pub use tokio_rustls::webpki::{DNSName, DNSNameRef};
 /// Command-line options.
 #[derive(Debug, StructOpt)]
 #[non_exhaustive]
+#[structopt(name = "cluvio-agent")]
 pub struct Options {
     /// Path to configuration file.
-    #[structopt(short, long, parse(from_os_str), required_unless_one(&["gen-keypair", "setup"]))]
+    #[structopt(short, long, parse(from_os_str), required_unless_one(&["gen-keypair", "setup", "version"]))]
     pub config: Option<PathBuf>,
+
+    /// Show version information.
+    #[structopt(long)]
+    pub version: bool,
 
     /// Log-level.
     #[structopt(short, long)]

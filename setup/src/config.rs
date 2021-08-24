@@ -1,4 +1,4 @@
-use crate::error::Error;
+use anyhow::{Context, Result};
 use indoc::indoc;
 use sealed_boxes::PublicKey;
 use std::fs;
@@ -17,7 +17,7 @@ const CONFIG_TEMPLATE: &str = indoc! {r#"
     port = 9000
 "#};
 
-pub fn create_config<P>(dir: P, loc: Location) -> Result<PublicKey, Error>
+pub fn create_config<P>(dir: P, loc: Location) -> Result<PublicKey>
 where
     P: AsRef<Path>
 {
@@ -26,7 +26,8 @@ where
     let conf = CONFIG_TEMPLATE
         .replace("<PRIVATEKEY>", &sb64)
         .replace("<HOST>", &HOST_TEMPLATE.replace("<LOCATION>", &loc.to_string()));
-    fs::write(dir.as_ref().join(Path::new(CONFIG_FILE)), conf.as_bytes())?;
+    let file = dir.as_ref().join(Path::new(CONFIG_FILE));
+    fs::write(&file, conf.as_bytes()).with_context(|| format!("Failed to write to {:?}", file))?;
     Ok(skey.public_key())
 }
 

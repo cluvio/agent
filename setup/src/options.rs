@@ -6,12 +6,17 @@ use util::Location;
 /// Command-line options.
 #[derive(Debug, StructOpt)]
 #[non_exhaustive]
+#[structopt(name = "cluvio-setup")]
 pub struct Options {
     #[structopt(long)]
     pub log: Option<String>,
 
+    /// Show version information.
+    #[structopt(long)]
+    pub version: bool,
+
     #[structopt(subcommand)]
-    pub command: Command
+    pub command: Option<Command>
 }
 
 #[derive(Debug, StructOpt)]
@@ -20,10 +25,10 @@ pub enum Command {
     Install {
         /// The agent installation directory.
         #[structopt(short, long)]
-        directory: PathBuf,
+        directory: Option<PathBuf>,
 
         /// The location this agent should use.
-        #[structopt(short, long)]
+        #[structopt(short, long, default_value = "eu")]
         location: Location,
 
         /// Install a particular version.
@@ -35,7 +40,7 @@ pub enum Command {
     Update {
         /// The agent installation directory to update.
         #[structopt(short, long)]
-        directory: PathBuf,
+        directory: Option<PathBuf>,
 
         /// Install a particular version.
         #[structopt(short, long)]

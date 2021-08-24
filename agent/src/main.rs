@@ -6,6 +6,11 @@ use util::exit;
 async fn main() {
     let opts = Options::from_args();
 
+    if opts.version {
+        println!("{}", env!("CARGO_PKG_VERSION"));
+        return
+    }
+
     let subscriber = tracing_subscriber::fmt()
         .with_timer(tracing_subscriber::fmt::time::ChronoUtc::rfc3339())
         .with_env_filter(opts.log.unwrap_or_else(|| "agent=info".to_string()));

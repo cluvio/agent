@@ -1,4 +1,5 @@
 use crossterm::style::Stylize;
+use crossterm::{ExecutableCommand, cursor};
 use std::io::{self, Write};
 use std::ops::{Deref, DerefMut};
 
@@ -28,9 +29,7 @@ impl Deref for Answer<'_> {
 pub struct Console {
     stdin: io::Stdin,
     stdout: io::Stdout,
-    answer: String,
-    ok_str: String,
-    er_str: String
+    answer: String
 }
 
 impl Console {
@@ -38,9 +37,7 @@ impl Console {
         Console {
             stdin: io::stdin(),
             stdout: io::stdout(),
-            answer: String::new(),
-            ok_str: format!(" [ {} ]\n", "OK".green()),
-            er_str: format!(" [ {} ]\n", "ER".red())
+            answer: String::new()
         }
     }
 
@@ -52,12 +49,16 @@ impl Console {
         Ok(Answer(self.answer.trim()))
     }
 
+    pub fn print<S: AsRef<str>>(&mut self, msg: S) -> io::Result<()> {
+        say(&mut self.stdout, msg)
+    }
+
     pub fn say<S: AsRef<str>>(&mut self, msg: S) -> io::Result<()> {
-        say(&mut self.stdout, format!("::: {}", msg.as_ref()))
+        say(&mut self.stdout, msg)
     }
 
     pub fn begin<S: AsRef<str>>(&mut self, msg: S) -> io::Result<Section<'_>> {
-        say(&mut self.stdout, format!("::: {}", msg.as_ref()))?;
+        say(&mut self.stdout, format!("[    ] {}", msg.as_ref()))?;
         Ok(Section(self, true))
     }
 }
@@ -66,7 +67,11 @@ pub struct Section<'a>(&'a mut Console, bool);
 
 impl Section<'_> {
     pub fn end(mut self) -> io::Result<()> {
-        say(&mut self.0.stdout, &self.0.ok_str)?;
+        self.0.stdout.execute(cursor::SavePosition)?;
+        self.0.stdout.execute(cursor::MoveToColumn(3))?;
+        say(&mut self.0.stdout, format!("{}", "OK".green()))?;
+        self.0.stdout.execute(cursor::RestorePosition)?;
+        println!("");
         self.1 = false;
         Ok(())
     }
@@ -75,7 +80,11 @@ impl Section<'_> {
 impl Drop for Section<'_> {
     fn drop(&mut self) {
         if self.1 {
-            let _ = say(&mut self.0.stdout, &self.0.er_str);
+            let _ = self.0.stdout.execute(cursor::SavePosition);
+            let _ = self.0.stdout.execute(cursor::MoveToColumn(3));
+            let _ = say(&mut self.0.stdout, format!("{}", "ER".red()));
+            let _ = self.0.stdout.execute(cursor::RestorePosition);
+            println!("");
         }
     }
 }
