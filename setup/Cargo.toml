@@ -6,7 +6,7 @@ edition = "2018"
 [dependencies]
 agent        = { path = "../agent" }
 bytes        = "1.0.1"
-crossterm    = "0.20.0"
+crossterm    = "0.21.0"
 indoc        = "1.0.3"
 log          = { version = "0.1.25", package = "tracing" }
 reqwest      = { version = "0.11.4", features = ["blocking"] }
