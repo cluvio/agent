@@ -175,7 +175,7 @@ jobs:
 
     - uses: actions/download-artifact@v2
       with:
-        name: setup-${{ env.AGENT_VERSION }}-aarch64-unknown-linux-musl.tar.xz
+        name: setup-${{ env.AGENT_VERSION }}-aarch64-unknown-linux-musl
         path: dist/setup/v${{ env.AGENT_VERSION }}-aarch64-unknown-linux-musl/cluvio-setup
 
     - uses: actions/download-artifact@v2
@@ -185,7 +185,7 @@ jobs:
 
     - uses: actions/download-artifact@v2
       with:
-        name: setup-${{ env.AGENT_VERSION }}-x86_64-apple-darwin.tar.xz
+        name: setup-${{ env.AGENT_VERSION }}-x86_64-apple-darwin
         path: dist/setup/v${{ env.AGENT_VERSION }}-x86_64-apple-darwin/cluvio-setup
 
     - uses: actions/download-artifact@v2
@@ -195,7 +195,7 @@ jobs:
 
     - uses: actions/download-artifact@v2
       with:
-        name: setup-${{ env.AGENT_VERSION }}-aarch64-apple-darwin.tar.xz
+        name: setup-${{ env.AGENT_VERSION }}-aarch64-apple-darwin
         path: dist/setup/v${{ env.AGENT_VERSION }}-aarch64-apple-darwin/cluvio-setup
 
     - uses: actions/download-artifact@v2
@@ -205,7 +205,7 @@ jobs:
 
     - uses: actions/download-artifact@v2
       with:
-        name: setup-${{ env.AGENT_VERSION }}-x86_64-pc-windows-msvc.tar.xz
+        name: setup-${{ env.AGENT_VERSION }}-x86_64-pc-windows-msvc
         path: dist/setup/v${{ env.AGENT_VERSION }}-x86_64-pc-windows-msvc/cluvio-setup
 
     - name: Create release.
