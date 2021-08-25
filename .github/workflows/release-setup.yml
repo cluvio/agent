@@ -130,30 +130,30 @@ jobs:
     - uses: actions/download-artifact@v2
       with:
         name: setup-${{ env.SETUP_VERSION }}-aarch64-unknown-linux-musl
-        path: dist/cluvio-setup/${{ env.SETUP_VERSION }}/aarch64-unknown-linux-musl/cluvio-setup
+        path: dist/cluvio-setup/${{ env.SETUP_VERSION }}/aarch64-unknown-linux-musl
 
     - uses: actions/download-artifact@v2
       with:
         name: setup-${{ env.SETUP_VERSION }}-x86_64-unknown-linux-musl
-        path: dist/cluvio-setup/${{ env.SETUP_VERSION }}/x86_64-unknown-linux-musl/cluvio-setup
+        path: dist/cluvio-setup/${{ env.SETUP_VERSION }}/x86_64-unknown-linux-musl
 
     - uses: actions/download-artifact@v2
       with:
         name: setup-${{ env.SETUP_VERSION }}-aarch64-apple-darwin
-        path: dist/cluvio-setup/${{ env.SETUP_VERSION }}/aarch64-apple-darwin/cluvio-setup
+        path: dist/cluvio-setup/${{ env.SETUP_VERSION }}/aarch64-apple-darwin
 
     - uses: actions/download-artifact@v2
       with:
         name: setup-${{ env.SETUP_VERSION }}-x86_64-apple-darwin
-        path: dist/cluvio-setup/${{ env.SETUP_VERSION }}/x86_64-apple-darwin/cluvio-setup
+        path: dist/cluvio-setup/${{ env.SETUP_VERSION }}/x86_64-apple-darwin
 
     - uses: actions/download-artifact@v2
       with:
         name: setup-${{ env.SETUP_VERSION }}-x86_64-pc-windows-msvc.exe
-        path: dist/cluvio-setup/${{ env.SETUP_VERSION }}/x86_64-pc-windows-msvc/cluvio-setup.exe
+        path: dist/cluvio-setup/${{ env.SETUP_VERSION }}/x86_64-pc-windows-msvc
 
     - name: Copy artifacts to S3.
-      run: aws --region eu-central-1 s3 cp dist/cluvio-setup s3://releases.cluvio.com/ --recursive
+      run: aws --region eu-central-1 s3 cp dist s3://releases.cluvio.com/ --recursive
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
