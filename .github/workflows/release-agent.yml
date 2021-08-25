@@ -1,4 +1,4 @@
-name: Create GitHub release
+name: Create Cluvio Agent GitHub release
 
 on: workflow_dispatch
 
@@ -19,20 +19,14 @@ jobs:
       run: rustup target add x86_64-unknown-linux-musl
 
     - name: Package agent.
-      run: make build-x86_64-unknown-linux-musl
+      run: make build-agent-x86_64-unknown-linux-musl
 
-    - run: echo AGENT_VERSION=$(make version) >> $GITHUB_ENV
+    - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
     - uses: actions/upload-artifact@v2
       with:
         name: agent-${{ env.AGENT_VERSION }}-x86_64-unknown-linux-musl.tar.xz
         path: "dist/agent-${{ env.AGENT_VERSION }}-x86_64-unknown-linux-musl.tar.xz"
-        retention-days: 1
-
-    - uses: actions/upload-artifact@v2
-      with:
-        name: setup-${{ env.AGENT_VERSION }}-x86_64-unknown-linux-musl
-        path: "dist/cluvio-setup"
         retention-days: 1
 
   build-aarch64-unknown-linux-musl:
@@ -48,20 +42,14 @@ jobs:
       run: rustup target add aarch64-unknown-linux-musl
 
     - name: Package agent.
-      run: make build-aarch64-unknown-linux-musl
+      run: make build-agent-aarch64-unknown-linux-musl
 
-    - run: echo AGENT_VERSION=$(make version) >> $GITHUB_ENV
+    - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
     - uses: actions/upload-artifact@v2
       with:
         name: agent-${{ env.AGENT_VERSION }}-aarch64-unknown-linux-musl.tar.xz
         path: "dist/agent-${{ env.AGENT_VERSION }}-aarch64-unknown-linux-musl.tar.xz"
-        retention-days: 1
-
-    - uses: actions/upload-artifact@v2
-      with:
-        name: setup-${{ env.AGENT_VERSION }}-aarch64-unknown-linux-musl
-        path: "dist/cluvio-setup"
         retention-days: 1
 
   build-x86_64-apple-darwin:
@@ -74,20 +62,14 @@ jobs:
       run: rustup target add x86_64-apple-darwin
 
     - name: Package agent.
-      run: make build-x86_64-apple-darwin
+      run: make build-agent-x86_64-apple-darwin
 
-    - run: echo AGENT_VERSION=$(make version) >> $GITHUB_ENV
+    - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
     - uses: actions/upload-artifact@v2
       with:
         name: agent-${{ env.AGENT_VERSION }}-x86_64-apple-darwin.tar.xz
         path: "dist/agent-${{ env.AGENT_VERSION }}-x86_64-apple-darwin.tar.xz"
-        retention-days: 1
-
-    - uses: actions/upload-artifact@v2
-      with:
-        name: setup-${{ env.AGENT_VERSION }}-x86_64-apple-darwin
-        path: "dist/cluvio-setup"
         retention-days: 1
 
   build-aarch64-apple-darwin:
@@ -100,20 +82,14 @@ jobs:
       run: rustup target add aarch64-apple-darwin
 
     - name: Package agent.
-      run: make build-aarch64-apple-darwin
+      run: make build-agent-aarch64-apple-darwin
 
-    - run: echo AGENT_VERSION=$(make version) >> $GITHUB_ENV
+    - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
     - uses: actions/upload-artifact@v2
       with:
         name: agent-${{ env.AGENT_VERSION }}-aarch64-apple-darwin.tar.xz
         path: "dist/agent-${{ env.AGENT_VERSION }}-aarch64-apple-darwin.tar.xz"
-        retention-days: 1
-
-    - uses: actions/upload-artifact@v2
-      with:
-        name: setup-${{ env.AGENT_VERSION }}-aarch64-apple-darwin
-        path: "dist/cluvio-setup"
         retention-days: 1
 
   build-x86_64-pc-windows-msvc:
@@ -126,21 +102,15 @@ jobs:
       run: rustup target add x86_64-pc-windows-msvc
 
     - name: Package agent.
-      run: make build-x86_64-pc-windows-msvc
+      run: make build-agent-x86_64-pc-windows-msvc
 
-    - run: echo AGENT_VERSION=$(make version) >> $GITHUB_ENV
+    - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
       shell: bash
 
     - uses: actions/upload-artifact@v2
       with:
         name: agent-${{ env.AGENT_VERSION }}-x86_64-pc-windows-msvc.tar.xz
         path: "dist/agent-${{ env.AGENT_VERSION }}-x86_64-pc-windows-msvc.tar.xz"
-        retention-days: 1
-
-    - uses: actions/upload-artifact@v2
-      with:
-        name: setup-${{ env.AGENT_VERSION }}-x86_64-pc-windows-msvc.exe
-        path: "dist/cluvio-setup.exe"
         retention-days: 1
 
   release:
@@ -155,18 +125,7 @@ jobs:
     - name: Checkout repository.
       uses: actions/checkout@v2
 
-    - run: echo AGENT_VERSION=$(make version) >> $GITHUB_ENV
-    - run: mkdir -p dist/setup
-
-    - uses: actions/download-artifact@v2
-      with:
-        name: agent-${{ env.AGENT_VERSION }}-x86_64-unknown-linux-musl.tar.xz
-        path: dist/
-
-    - uses: actions/download-artifact@v2
-      with:
-        name: setup-${{ env.AGENT_VERSION }}-x86_64-unknown-linux-musl
-        path: dist/setup/v${{ env.AGENT_VERSION }}-x86_64-unknown-linux-musl/cluvio-setup
+    - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
     - uses: actions/download-artifact@v2
       with:
@@ -175,8 +134,13 @@ jobs:
 
     - uses: actions/download-artifact@v2
       with:
-        name: setup-${{ env.AGENT_VERSION }}-aarch64-unknown-linux-musl
-        path: dist/setup/v${{ env.AGENT_VERSION }}-aarch64-unknown-linux-musl/cluvio-setup
+        name: agent-${{ env.AGENT_VERSION }}-aarch64-apple-darwin.tar.xz
+        path: dist/
+
+    - uses: actions/download-artifact@v2
+      with:
+        name: agent-${{ env.AGENT_VERSION }}-x86_64-unknown-linux-musl.tar.xz
+        path: dist/
 
     - uses: actions/download-artifact@v2
       with:
@@ -185,28 +149,8 @@ jobs:
 
     - uses: actions/download-artifact@v2
       with:
-        name: setup-${{ env.AGENT_VERSION }}-x86_64-apple-darwin
-        path: dist/setup/v${{ env.AGENT_VERSION }}-x86_64-apple-darwin/cluvio-setup
-
-    - uses: actions/download-artifact@v2
-      with:
-        name: agent-${{ env.AGENT_VERSION }}-aarch64-apple-darwin.tar.xz
-        path: dist/
-
-    - uses: actions/download-artifact@v2
-      with:
-        name: setup-${{ env.AGENT_VERSION }}-aarch64-apple-darwin
-        path: dist/setup/v${{ env.AGENT_VERSION }}-aarch64-apple-darwin/cluvio-setup
-
-    - uses: actions/download-artifact@v2
-      with:
         name: agent-${{ env.AGENT_VERSION }}-x86_64-pc-windows-msvc.tar.xz
         path: dist/
-
-    - uses: actions/download-artifact@v2
-      with:
-        name: setup-${{ env.AGENT_VERSION }}-x86_64-pc-windows-msvc.exe
-        path: dist/setup/v${{ env.AGENT_VERSION }}-x86_64-pc-windows-msvc/cluvio-setup.exe
 
     - name: Create release.
       shell: bash

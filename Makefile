@@ -1,18 +1,29 @@
-VERSION = 0.1.0
+AGENT_VERSION = 0.1.0
+SETUP_VERSION = 0.1.0
 
-.PHONY: build-aarch64-unknown-linux-musl \
-	build-x86_64-unknown-linux-musl \
-	build-x86_64-apple-darwin \
-	build-aarch64-apple-darwin \
-	build-x86_64-pc-windows-msvc \
-	version
+.PHONY: \
+    build-agent-aarch64-unknown-linux-musl \
+	build-agent-x86_64-unknown-linux-musl \
+	build-agent-x86_64-apple-darwin \
+	build-agent-aarch64-apple-darwin \
+	build-agent-x86_64-pc-windows-msvc \
+    build-setup-aarch64-unknown-linux-musl \
+	build-setup-x86_64-unknown-linux-musl \
+	build-setup-x86_64-apple-darwin \
+	build-setup-aarch64-apple-darwin \
+	build-setup-x86_64-pc-windows-msvc \
+	agent-version \
+    setup-version
 
-version:
-	@echo $(VERSION)
+agent-version:
+	@echo $(AGENT_VERSION)
 
-build-x86_64-unknown-linux-musl: export TARGET_CC = cc
-build-x86_64-unknown-linux-musl: export TARGET_AR = ar
-build-x86_64-unknown-linux-musl: clean
+setup-version:
+	@echo $(SETUP_VERSION)
+
+build-agent-x86_64-unknown-linux-musl: export TARGET_CC = cc
+build-agent-x86_64-unknown-linux-musl: export TARGET_AR = ar
+build-agent-x86_64-unknown-linux-musl: clean
 	mkdir -p build dist
 	cargo install \
 		--target x86_64-unknown-linux-musl \
@@ -20,21 +31,13 @@ build-x86_64-unknown-linux-musl: clean
 		--locked \
 		--root build/ \
 		--path agent
-	cargo install \
-		--target x86_64-unknown-linux-musl \
-		--no-track \
-		--locked \
-		--root build/ \
-		--path setup
 	strip build/bin/agent
-	strip build/bin/setup
 	mv build/bin/agent build/cluvio-agent
-	mv build/bin/setup dist/cluvio-setup
 	tar caf dist/agent-$(VERSION)-x86_64-unknown-linux-musl.tar.xz -C build/ cluvio-agent
 
-build-aarch64-unknown-linux-musl: export TARGET_CC = aarch64-linux-gnu-gcc
-build-aarch64-unknown-linux-musl: export TARGET_AR = aarch64-linux-gnu-ar
-build-aarch64-unknown-linux-musl: clean
+build-agent-aarch64-unknown-linux-musl: export TARGET_CC = aarch64-linux-gnu-gcc
+build-agent-aarch64-unknown-linux-musl: export TARGET_AR = aarch64-linux-gnu-ar
+build-agent-aarch64-unknown-linux-musl: clean
 	mkdir -p build dist
 	cargo install \
 		--target aarch64-unknown-linux-musl \
@@ -42,19 +45,11 @@ build-aarch64-unknown-linux-musl: clean
 		--locked \
 		--root build/ \
 		--path agent
-	cargo install \
-		--target aarch64-unknown-linux-musl \
-		--no-track \
-		--locked \
-		--root build/ \
-		--path setup
 	aarch64-linux-gnu-strip build/bin/agent
-	aarch64-linux-gnu-strip build/bin/setup
 	mv build/bin/agent build/cluvio-agent
-	mv build/bin/setup dist/cluvio-setup
 	tar caf dist/agent-$(VERSION)-aarch64-unknown-linux-musl.tar.xz -C build/ cluvio-agent
 
-build-x86_64-apple-darwin: clean
+build-agent-x86_64-apple-darwin: clean
 	mkdir -p build dist
 	cargo install \
 		--target x86_64-apple-darwin \
@@ -62,21 +57,13 @@ build-x86_64-apple-darwin: clean
 		--locked \
 		--root build/ \
 		--path agent
-	cargo install \
-		--target x86_64-apple-darwin \
-		--no-track \
-		--locked \
-		--root build/ \
-		--path setup
 	strip build/bin/agent
-	strip build/bin/setup
 	mv build/bin/agent build/cluvio-agent
-	mv build/bin/setup dist/cluvio-setup
 	tar caf dist/agent-$(VERSION)-x86_64-apple-darwin.tar.xz -C build/ cluvio-agent
 
-build-aarch64-apple-darwin: export SDKROOT = $(shell xcrun -sdk macosx11.1 --show-sdk-path)
-build-aarch64-apple-darwin: export MACOSX_DEPLOYMENT_TARGET = $(shell xcrun -sdk macosx11.1 --show-sdk-platform-version)
-build-aarch64-apple-darwin: clean
+build-agent-aarch64-apple-darwin: export SDKROOT = $(shell xcrun -sdk macosx11.1 --show-sdk-path)
+build-agent-aarch64-apple-darwin: export MACOSX_DEPLOYMENT_TARGET = $(shell xcrun -sdk macosx11.1 --show-sdk-platform-version)
+build-agent-aarch64-apple-darwin: clean
 	mkdir -p build dist
 	cargo install \
 		--target aarch64-apple-darwin \
@@ -84,19 +71,11 @@ build-aarch64-apple-darwin: clean
 		--locked \
 		--root build/ \
 		--path agent
-	cargo install \
-		--target aarch64-apple-darwin \
-		--no-track \
-		--locked \
-		--root build/ \
-		--path setup
 	strip build/bin/agent
-	strip build/bin/setup
 	mv build/bin/agent build/cluvio-agent
-	mv build/bin/setup dist/cluvio-setup
 	tar caf dist/agent-$(VERSION)-aarch64-apple-darwin.tar.xz -C build/ cluvio-agent
 
-build-x86_64-pc-windows-msvc: clean
+build-agent-x86_64-pc-windows-msvc: clean
 	mkdir -p build dist
 	cargo install \
 		--target x86_64-pc-windows-msvc \
@@ -104,19 +83,72 @@ build-x86_64-pc-windows-msvc: clean
 		--locked \
 		--root build/ \
 		--path agent
-	cargo install \
-		--target x86_64-pc-windows-msvc \
-		--no-track \
-		--locked \
-		--root build/ \
-		--path setup
 	strip build/bin/agent.exe
-	strip build/bin/setup.exe
 	mv build/bin/agent.exe build/cluvio-agent.exe
-	mv build/bin/setup.exe dist/cluvio-setup.exe
 	(cd build && \
 		7z.exe a -ttar ../dist/agent-$(VERSION)-x86_64-pc-windows-msvc.tar -so cluvio-agent.exe | \
 		7z.exe a ../dist/agent-$(VERSION)-x86_64-pc-windows-msvc.tar.xz -si)
+
+build-setup-x86_64-unknown-linux-musl: export TARGET_CC = cc
+build-setup-x86_64-unknown-linux-musl: export TARGET_AR = ar
+build-setup-x86_64-unknown-linux-musl: clean
+	mkdir -p build dist
+	cargo install \
+		--target x86_64-unknown-linux-musl \
+		--no-track \
+		--locked \
+		--root build/ \
+		--path setup
+	strip build/bin/setup
+	mv build/bin/setup dist/cluvio-setup
+
+build-setup-aarch64-unknown-linux-musl: export TARGET_CC = aarch64-linux-gnu-gcc
+build-setup-aarch64-unknown-linux-musl: export TARGET_AR = aarch64-linux-gnu-ar
+build-setup-aarch64-unknown-linux-musl: clean
+	mkdir -p build dist
+	cargo install \
+		--target aarch64-unknown-linux-musl \
+		--no-track \
+		--locked \
+		--root build/ \
+		--path setup
+	aarch64-linux-gnu-strip build/bin/setup
+	mv build/bin/setup dist/cluvio-setup
+
+build-setup-x86_64-apple-darwin: clean
+	mkdir -p build dist
+	cargo install \
+		--target x86_64-apple-darwin \
+		--no-track \
+		--locked \
+		--root build/ \
+		--path setup
+	strip build/bin/setup
+	mv build/bin/setup dist/cluvio-setup
+
+build-setup-aarch64-apple-darwin: export SDKROOT = $(shell xcrun -sdk macosx11.1 --show-sdk-path)
+build-setup-aarch64-apple-darwin: export MACOSX_DEPLOYMENT_TARGET = $(shell xcrun -sdk macosx11.1 --show-sdk-platform-version)
+build-setup-aarch64-apple-darwin: clean
+	mkdir -p build dist
+	cargo install \
+		--target aarch64-apple-darwin \
+		--no-track \
+		--locked \
+		--root build/ \
+		--path setup
+	strip build/bin/setup
+	mv build/bin/setup dist/cluvio-setup
+
+build-setup-x86_64-pc-windows-msvc: clean
+	mkdir -p build dist
+	cargo install \
+		--target x86_64-pc-windows-msvc \
+		--no-track \
+		--locked \
+		--root build/ \
+		--path setup
+	strip build/bin/setup.exe
+	mv build/bin/setup.exe dist/cluvio-setup.exe
 
 clean:
 	rm -rf build/ dist/
