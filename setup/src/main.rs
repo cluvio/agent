@@ -80,7 +80,11 @@ fn main() -> Result<()> {
 
 fn get_directory(console: &mut Console) -> Result<PathBuf> {
     let answer = console.ask("Please enter the installation directory: ")?;
-    Ok(map_dir(&*answer))
+    let dir = map_dir(&*answer);
+    if !dir.is_dir() {
+        return Err(anyhow!("{:?} is not a directory", dir))
+    }
+    Ok(dir)
 }
 
 #[cfg(unix)]
