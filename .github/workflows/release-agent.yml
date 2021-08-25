@@ -63,6 +63,9 @@ jobs:
 
     - name: Package agent.
       run: make build-agent-x86_64-apple-darwin
+      env:
+        MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+        MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
 
     - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
@@ -83,6 +86,9 @@ jobs:
 
     - name: Package agent.
       run: make build-agent-aarch64-apple-darwin
+      env:
+        MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+        MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
 
     - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 

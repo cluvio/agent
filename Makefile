@@ -59,6 +59,7 @@ build-agent-x86_64-apple-darwin: clean
 		--path agent
 	strip build/bin/agent
 	mv build/bin/agent build/cluvio-agent
+	scripts/apple-codesign.sh build/cluvio-agent $(MACOS_CERTIFICATE) $(MACOS_CERTIFICATE_PWD)
 	tar caf dist/agent-$(AGENT_VERSION)-x86_64-apple-darwin.tar.xz -C build/ cluvio-agent
 
 build-agent-aarch64-apple-darwin: export SDKROOT = $(shell xcrun -sdk macosx11.1 --show-sdk-path)
@@ -73,6 +74,7 @@ build-agent-aarch64-apple-darwin: clean
 		--path agent
 	strip build/bin/agent
 	mv build/bin/agent build/cluvio-agent
+	scripts/apple-codesign.sh build/cluvio-agent $(MACOS_CERTIFICATE) $(MACOS_CERTIFICATE_PWD)
 	tar caf dist/agent-$(AGENT_VERSION)-aarch64-apple-darwin.tar.xz -C build/ cluvio-agent
 
 build-agent-x86_64-pc-windows-msvc: clean
@@ -125,6 +127,7 @@ build-setup-x86_64-apple-darwin: clean
 		--path setup
 	strip build/bin/setup
 	mv build/bin/setup dist/cluvio-setup
+	scripts/apple-codesign.sh dist/cluvio-setup $(MACOS_CERTIFICATE) $(MACOS_CERTIFICATE_PWD)
 
 build-setup-aarch64-apple-darwin: export SDKROOT = $(shell xcrun -sdk macosx11.1 --show-sdk-path)
 build-setup-aarch64-apple-darwin: export MACOSX_DEPLOYMENT_TARGET = $(shell xcrun -sdk macosx11.1 --show-sdk-platform-version)
@@ -138,6 +141,7 @@ build-setup-aarch64-apple-darwin: clean
 		--path setup
 	strip build/bin/setup
 	mv build/bin/setup dist/cluvio-setup
+	scripts/apple-codesign.sh dist/cluvio-setup $(MACOS_CERTIFICATE) $(MACOS_CERTIFICATE_PWD)
 
 build-setup-x86_64-pc-windows-msvc: clean
 	mkdir -p build dist
