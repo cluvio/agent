@@ -153,7 +153,7 @@ jobs:
         path: dist/cluvio-setup/${{ env.SETUP_VERSION }}/x86_64-pc-windows-msvc/cluvio-setup.exe
 
     - name: Copy artifacts to S3.
-      run: aws s3 cp dist/cluvio-setup s3://releases.cluvio.com/ --recursive
+      run: aws --region eu-central-1 s3 cp dist/cluvio-setup s3://releases.cluvio.com/ --recursive
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
