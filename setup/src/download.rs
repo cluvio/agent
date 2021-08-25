@@ -28,7 +28,7 @@ pub fn latest_version(console: &mut Console, url: &Url) -> Result<Version> {
         .build()?;
     let res = client.get(url).send()?;
     if !res.status().is_redirection() {
-        return Err(anyhow!("Response status {} is not a redirect.", res.status()))
+        return Err(anyhow!("Unexpected HTTP status: {}.", res.status()))
     }
     let url: Url = res.headers()
         .get("location")
