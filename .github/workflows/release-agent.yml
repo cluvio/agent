@@ -66,6 +66,7 @@ jobs:
       env:
         MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
         MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+        MACOS_DEV_IDENTITY: ${{ secrets.MACOS_DEV_IDENTITY }}
 
     - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
@@ -89,6 +90,7 @@ jobs:
       env:
         MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
         MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+        MACOS_DEV_IDENTITY: ${{ secrets.MACOS_DEV_IDENTITY }}
 
     - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
