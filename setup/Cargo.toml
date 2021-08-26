@@ -5,7 +5,7 @@ edition = "2018"
 
 [dependencies]
 anyhow       = "1.0.43"
-bytes        = "1.0.1"
+bytes        = "1.1.0"
 crossterm    = "0.21.0"
 dirs         = "3.0.2"
 indoc        = "1.0.3"
