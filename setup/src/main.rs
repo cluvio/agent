@@ -5,6 +5,7 @@ mod download;
 mod install;
 mod options;
 mod update;
+mod util;
 
 use anyhow::{anyhow, Context, Result};
 use indoc::indoc;
@@ -13,9 +14,11 @@ use self::console::Console;
 use self::install::Installer;
 use self::options::{Options, Command};
 use std::path::{Path, PathBuf};
+use std::process::exit;
 use self::update::Updater;
+use self::util::{create_dir, Outcome};
 use structopt::StructOpt;
-use util::Location;
+use ::util::Location;
 
 const BASE_URL: &str = "https://github.com/cluvio/agent/releases";
 
@@ -40,7 +43,7 @@ fn main() -> Result<()> {
                 if let Some(dir) = directory {
                     dir
                 } else {
-                    get_directory(&mut console)?
+                    get_directory(&mut console, true)?
                 };
             let mut installer = Installer::new(console, location, directory, version);
             installer.install(&base_url).context("Installation failed.")?
@@ -50,23 +53,23 @@ fn main() -> Result<()> {
                 if let Some(dir) = directory {
                     dir
                 } else {
-                    get_directory(&mut console)?
+                    get_directory(&mut console, false)?
                 };
             let mut updater = Updater::new(console, directory, version);
             updater.update(&base_url).context("Update failed.")?
         }
         None => {
             let answer = console.ask(indoc! {
-                "Would you like to install [i] a new agent or update [u] an existing installation?: [i/u] "
+                "Would you like to install [i] a new agent or update [u] an existing installation? [i/u]: "
             })?;
             match &*answer {
                 "i" | "I" => {
-                    let directory = get_directory(&mut console)?;
+                    let directory = get_directory(&mut console, true)?;
                     let mut installer = Installer::new(console, Location::Eu, directory, None);
                     installer.install(&base_url).context("Installation failed.")?
-                },
+                }
                 "u" | "U" => {
-                    let directory = get_directory(&mut console)?;
+                    let directory = get_directory(&mut console, false)?;
                     let mut updater = Updater::new(console, directory, None);
                     updater.update(&base_url).context("Update failed.")?
                 }
@@ -78,11 +81,17 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn get_directory(console: &mut Console) -> Result<PathBuf> {
+fn get_directory(console: &mut Console, create: bool) -> Result<PathBuf> {
     let answer = console.ask("Please enter the installation directory: ")?;
     let dir = map_dir(&*answer);
     if !dir.is_dir() {
-        return Err(anyhow!("{:?} is not a directory", dir))
+        if !create {
+            return Err(anyhow!("{:?} is not a directory.", dir))
+        }
+        match create_dir(console, &dir)? {
+            Outcome::Ready => {}
+            Outcome::Abort => exit(0)
+        }
     }
     Ok(dir)
 }

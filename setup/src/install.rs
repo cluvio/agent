@@ -3,13 +3,14 @@ use crate::config::{create_config, CONFIG_FILE};
 use crate::console::Console;
 use crate::constants::ARCHIVE_TEMPLATE;
 use crate::download::{download, latest_version};
+use crate::util::{create_dir, Outcome};
 use crossterm::style::Stylize;
 use indoc::formatdoc;
 use reqwest::Url;
 use semver::Version;
 use std::ffi::OsStr;
 use std::io::{self, BufReader};
-use std::fs::{self, File};
+use std::fs::File;
 use std::path::{Path, PathBuf};
 use tempfile::tempdir;
 use util::{base64, Location};
@@ -55,20 +56,9 @@ impl Installer {
             download(&mut self.console, &temp_path, &archive, &download_url).context("Download failed.")?
         }
 
-        while !self.directory.is_dir() {
-            let answer = self.console.ask(format! {
-                "The directory \"{}\" does not exist yet. Should I create it? [Y/n]: ",
-                self.directory.to_string_lossy().bold()
-            })?;
-            if answer.is_any_of(["", "y", "Y"]) {
-                fs::create_dir_all(&self.directory)
-                    .with_context(|| format!("Failed to create directory {:?}", &self.directory))?;
-                break
-            }
-            let answer = self.console.ask("Abort the installation? [Y/n]: ")?;
-            if answer.is_any_of(["", "y", "Y"]) {
-                return Ok(())
-            }
+        match create_dir(&mut self.console, &self.directory)? {
+            Outcome::Ready => {}
+            Outcome::Abort => return Ok(())
         }
 
         let section = self.console.begin(format! {
