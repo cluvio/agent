@@ -16,4 +16,4 @@ serde        = { version = "1.0.125", features = ["derive"] }
 tokio-rustls = "0.22"
 
 [dependencies.chacha20poly1305]
-version = "0.8"
+version = "0.9"
