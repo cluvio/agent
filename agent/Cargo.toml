@@ -16,7 +16,7 @@ protocol     = { path = "../protocol" }
 sealed-boxes = { path = "../sealed-boxes" }
 serde        = { version = "1.0.125", features = ["derive"] }
 socket2      = { version = "0.4.0", features = ["all"] }
-structopt    = "0.3.21"
+structopt    = "0.3.23"
 thiserror    = "1.0.24"
 tokio-rustls = "0.22"
 tokio-util   = { version = "0.6.5", features = ["compat"] }
