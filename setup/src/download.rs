@@ -32,13 +32,16 @@ pub fn latest_version(console: &mut Console, url: &Url) -> Result<Version> {
     }
     let url: Url = res.headers()
         .get("location")
-        .ok_or(anyhow!("Missing location header"))?
+        .ok_or_else(|| anyhow!("Missing location header"))?
         .to_str()
         .map_err(|e| anyhow::Error::from(e).context("Invalid location header"))?
         .parse()
         .map_err(|e| anyhow::Error::from(e).context("Invalid location URL"))?;
-    let sgs = url.path_segments().and_then(|s| s.rev().next()).ok_or(anyhow!("Missing URL path segments"))?;
-    let ver = Version::parse(sgs.strip_prefix("v").ok_or(anyhow!("Failed to parse URL as version"))?)?;
+    let sgs = url.path_segments()
+        .and_then(|s| s.rev().next())
+        .ok_or_else(|| anyhow!("Missing URL path segments"))?;
+    let ver = Version::parse(sgs.strip_prefix('v')
+        .ok_or_else(|| anyhow!("Failed to parse URL as version"))?)?;
     console.end()?;
     Ok(ver)
 }

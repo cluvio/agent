@@ -44,31 +44,22 @@ pub struct Options {
 pub struct Config {
     /// The base64-encoded private key of this agent.
     #[serde(deserialize_with = "util::serde::decode_secret_key")]
-    pub private_key: SecretKey,
-
-    /// The max. number of data connections to open (default = 100).
-    #[serde(default = "default_max_connections")]
-    pub max_connections: u16,
+    pub secret_key: SecretKey,
 
     /// The timeout of connects.
     #[serde(deserialize_with = "util::serde::decode_duration", default = "default_connect_timeout")]
     pub connect_timeout: Duration,
 
-    /// How often to check if the control server is still there.
+    /// How often to check if the server is still there.
     #[serde(deserialize_with = "util::serde::decode_duration", default = "default_ping_frequency")]
     pub ping_frequency: Duration,
 
-    /// List of allowed external domains or IPv4/IPv6 networks (per default there are no constraints).
-    #[serde(default = "default_net", rename = "allowed-external")]
-    pub external: NonEmpty<Network>,
-
-    /// List of allowed internal domains or IPv4/IPv6 networks (per default there are no constraints).
-    #[serde(default = "default_net", rename = "allowed-internal")]
-    pub internal: NonEmpty<Network>,
+    /// List of allowed domains or IPv4/IPv6 networks (per default there are no constraints).
+    #[serde(default = "default_net")]
+    pub allowed_addresses: NonEmpty<Network>,
 
     /// Control server settings.
-    #[serde(rename = "control-server")]
-    pub control: ControlServer
+    pub server: Server
 }
 
 #[derive(Debug, Clone)]
@@ -108,13 +99,11 @@ impl<'de> Deserialize<'de> for Network {
 impl Config {
     pub fn new(sk: SecretKey, host: DNSName, port: u16) -> Self {
         Config {
-            private_key: sk,
-            max_connections: default_max_connections(),
+            secret_key: sk,
             connect_timeout: default_connect_timeout(),
             ping_frequency: default_ping_frequency(),
-            external: default_net(),
-            internal: default_net(),
-            control: ControlServer { host, port, trust: None }
+            allowed_addresses: default_net(),
+            server: Server { host, port, trust: None }
         }
     }
 
@@ -124,37 +113,31 @@ impl Config {
         Ok(c)
     }
 
-    pub fn control_mut(&mut self) -> &mut ControlServer {
-        &mut self.control
+    pub fn server_mut(&mut self) -> &mut Server {
+        &mut self.server
     }
 
-    pub fn external_mut(&mut self) -> &mut NonEmpty<Network> {
-        &mut self.external
-    }
-
-    pub fn internal_mut(&mut self) -> &mut NonEmpty<Network> {
-        &mut self.internal
+    pub fn allowed_addresses_mut(&mut self) -> &mut NonEmpty<Network> {
+        &mut self.allowed_addresses
     }
 }
 
 impl fmt::Debug for Config {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("Config")
-            .field("private_key", &"********")
-            .field("max_connections", &self.max_connections)
+            .field("secret_key", &"********")
             .field("connect_timeout", &self.connect_timeout)
             .field("ping_frequency", &self.ping_frequency)
-            .field("control_server", &self.control)
-            .field("external", &self.external)
-            .field("internal", &self.internal)
+            .field("server", &self.server)
+            .field("allowed_addresses", &self.allowed_addresses)
             .finish()
     }
 }
 
 #[derive(Debug, Deserialize)]
 #[non_exhaustive]
-pub struct ControlServer {
-    /// The hostname of the remote control server.
+pub struct Server {
+    /// The hostname of the remote server.
     #[serde(deserialize_with = "util::serde::decode_dns_name")]
     pub host: DNSName,
 
@@ -167,20 +150,16 @@ pub struct ControlServer {
     pub trust: Option<NonEmpty<Certificate>>
 }
 
-fn default_max_connections() -> u16 {
-    1000
-}
-
 fn default_port() -> u16 {
     443
 }
 
 fn default_connect_timeout() -> Duration {
-    Duration::from_secs(60)
+    Duration::from_secs(30)
 }
 
 fn default_ping_frequency() -> Duration {
-    Duration::from_secs(30)
+    Duration::from_secs(60)
 }
 
 fn default_net() -> NonEmpty<Network> {

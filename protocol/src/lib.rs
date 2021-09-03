@@ -9,8 +9,6 @@ use std::borrow::{Borrow, Cow};
 use std::fmt;
 use std::net::{IpAddr, SocketAddr};
 use std::str::FromStr;
-use util::crypto;
-use util::time::UnixTime;
 
 pub use agentid::AgentId;
 
@@ -34,9 +32,8 @@ impl<D> Message<D> {
     }
 }
 
-
-/// Payload of a server message.
-#[derive(Debug, Decode, Encode)]
+/// Payload of a server control message.
+#[derive(Decode, Encode)]
 pub enum Server<'a> {
     /// Ask the client to answer with a `Pong`.
     #[n(0)] Ping,
@@ -55,52 +52,45 @@ pub enum Server<'a> {
         #[n(0)] text: Box<CipherText>
     },
 
-    /// Server answer to a newly opened data connection.
-    ///
-    /// Informs the client about the address the node will send
-    /// traffic from.
-    ///
-    /// Control connections can not expect this message.
-    #[n(3)] DataAddress {
-        /// The message Id this answer corresponds to.
-        #[n(0)] re: Id,
-        /// Some opaque value to report back to the gateway.
-        #[b(1)] data: Opaque<'a>
-    },
-
-    /// Tell the client to open a new data connection between `ext` and `int`.
-    #[n(4)] Bridge {
-        /// The external address.
-        #[b(0)] ext: Address<'a>,
-        /// The internal address.
-        #[b(1)] int: Address<'a>,
-        /// Authorization token.
-        #[b(2)] auth: Authorization<'a>
-    },
-
-    /// Connect to the provided address and report back the result.
-    #[n(5)] TestConnect {
-        /// The internal address to test.
-        #[b(0)] int: Address<'a>
-    },
-
     /// Terminate the connection.
-    #[n(6)] Terminate {
+    #[n(3)] Terminate {
         #[n(0)] reason: Reason
+    },
+
+    /// Test reachability of upstream system.
+    #[n(4)] Test {
+        /// The upstream address.
+        #[b(0)] addr: Address<'a>
+    }
+}
+
+// Custom impl to skip over sensitive data.
+impl fmt::Debug for Server<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Server::Ping =>
+                f.debug_tuple("Ping").finish(),
+            Server::Pong { re } =>
+                f.debug_struct("Pong").field("re", re).finish(),
+            Server::Challenge { text: _ } =>
+                f.debug_struct("Challenge").finish(),
+            Server::Terminate { reason } =>
+                f.debug_struct("Terminate").field("reason", reason).finish(),
+            Server::Test { addr } =>
+                f.debug_struct("Test").field("addr", addr).finish()
+        }
     }
 }
 
 /// Payload of a client message.
-#[derive(Debug, Decode, Encode)]
+#[derive(Decode, Encode)]
 pub enum Client<'a> {
     /// Initial client message.
     #[n(0)] Hello {
         /// The client's public key.
         #[b(0)] pubkey: Cow<'a, ByteSlice>,
-        /// What kind of connection this is.
-        #[n(1)] connection: ConnectionType<'a>,
         /// The version of this agent.
-        #[n(2)] agent_version: Version
+        #[n(1)] agent_version: Version
     },
 
     /// Ask the server to answer with a `Pong`.
@@ -121,22 +111,8 @@ pub enum Client<'a> {
         #[b(1)] text: Cow<'a, ByteSlice>
     },
 
-    /// Answer to a previously received `Server::Bridge` message.
-    ///
-    /// After the client successfully reached the requested
-    /// external system, it informs the control server about
-    /// the external peer address it is awaiting traffic on to
-    /// relay to its internal endpoint.
-    #[n(4)] Established  {
-        /// The original message Id this answer corresponds to.
-        #[n(0)] re: Id,
-        /// Some opaque value to report back to the gateway.
-        #[b(1)] data: Opaque<'a>
-    },
-
     /// Some error happened.
-    #[n(5)]
-    #[cbor(map)]
+    #[cbor(n(4), map)]
     Error {
         /// The original message this error responds to.
         #[n(0)] re: Id,
@@ -146,58 +122,50 @@ pub enum Client<'a> {
         #[b(2)] msg: Option<Cow<'a, str>>
     },
 
-    /// Client has now free capacity for more data connections.
-    #[n(6)] Available,
-
-    /// The result of a successful `TestConnect` command.
-    #[n(7)] TestConnectSuccess {
-        #[n(0)] re: Id
-    }
-}
-
-/// The kind of connection the client has opened.
-#[derive(Debug, Decode, Encode)]
-pub enum ConnectionType<'a> {
-    /// A control connection for receiving commands.
-    #[n(0)] Control,
-    /// A data connection for relaying data.
-    #[n(1)] Data {
+    /// Test result.
+    #[n(5)] Test {
+        /// The original message this test result responds to.
         #[n(0)] re: Id,
-        #[b(1)] auth: Authorization<'a>
+        /// The optional error code.
+        #[n(1)] code: Option<ErrorCode>
     }
 }
 
-/// An authorization token for opening new data connections.
-#[derive(Debug, Decode, Encode)]
-pub struct Authorization<'a> {
-    /// Encoded [`AuthorizationToken`].
-    #[b(0)] pub token: Cow<'a, ByteSlice>,
-    /// Signature of authorization token.
-    #[b(1)] pub sign: Cow<'a, ByteSlice>
-}
-
-/// The authorization token.
-#[derive(Debug, Decode, Encode)]
-pub struct AuthorizationToken<'a> {
-    /// Signing key identifier.
-    #[n(0)] pub key_id: u64,
-    /// Validity timeout.
-    #[n(1)] pub until: UnixTime,
-    /// The opaque authorization bytes.
-    #[b(2)] pub value: Cow<'a, ByteSlice>
-}
-
-impl<'a> Authorization<'a> {
-    pub fn into_owned<'b>(self) -> Authorization<'b> {
-        Authorization {
-            token: Cow::Owned(self.token.into_owned()),
-            sign: Cow::Owned(self.sign.into_owned())
+// Custom impl to skip over some data.
+impl fmt::Debug for Client<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Client::Ping =>
+                f.debug_tuple("Ping").finish(),
+            Client::Pong { re } =>
+                f.debug_struct("Pong").field("re", re).finish(),
+            Client::Hello { agent_version, pubkey: _ } =>
+                f.debug_struct("Hello").field("agent_version", agent_version).finish(),
+            Client::Response { re, text: _ } =>
+                f.debug_struct("Response").field("re", re).finish(),
+            Client::Error { re, code, msg } =>
+                f.debug_struct("Error")
+                 .field("re", re)
+                 .field("code", code)
+                 .field("msg", msg)
+                 .finish(),
+            Client::Test { re, code } =>
+                f.debug_struct("Test")
+                 .field("re", re)
+                 .field("code", code)
+                 .finish()
         }
     }
 }
 
+/// Establish connection to the given address and transfer data back and forth.
+#[derive(Debug, Decode, Encode)]
+pub struct Connect<'a> {
+    #[b(0)] pub addr: Address<'a>
+}
+
 /// A network address.
-#[derive(Debug, Decode, Encode, PartialEq, Eq)]
+#[derive(Debug, Clone, Decode, Encode, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Address<'a> {
     /// IP address and port number.
     #[n(0)] Addr(#[n(0)] SocketAddr),
@@ -208,14 +176,14 @@ pub enum Address<'a> {
 impl<'a> Address<'a> {
     pub fn to_owned<'b>(&self) -> Address<'b> {
         match self {
-            Address::Addr(a) => Address::Addr(*a),
+            Address::Addr(a)    => Address::Addr(*a),
             Address::Name(n, p) => Address::Name(Cow::Owned(n.as_ref().to_owned()), *p)
         }
     }
 
     pub fn into_owned<'b>(self) -> Address<'b> {
         match self {
-            Address::Addr(a) => Address::Addr(a),
+            Address::Addr(a)    => Address::Addr(a),
             Address::Name(n, p) => Address::Name(Cow::Owned(n.into_owned()), p)
         }
     }
@@ -253,26 +221,6 @@ impl fmt::Display for Address<'_> {
     }
 }
 
-#[derive(Debug, Decode, Encode)]
-pub struct Opaque<'a> {
-    /// The encryption key identifier.
-    #[n(0)] pub key_id: u64,
-    /// A message nonce.
-    #[n(1)] pub nonce: crypto::Nonce,
-    /// The encrypted payload.
-    #[b(2)] pub value: Cow<'a, ByteSlice>
-}
-
-impl<'a> Opaque<'a> {
-    pub fn into_owned<'b>(self) -> Opaque<'b> {
-        Opaque {
-            key_id: self.key_id,
-            nonce: self.nonce,
-            value: Cow::Owned(self.value.into_owned())
-        }
-    }
-}
-
 /// The challenge-response ciphertext used when authenticating clients.
 #[derive(Debug, Clone, Decode, Encode)]
 #[cbor(transparent)]
@@ -293,10 +241,18 @@ pub enum ErrorCode {
     #[n(0)] CouldNotConnect,
     /// The requested address is blocked by the client configuration.
     #[n(1)] AddressNotAllowed,
-    /// Max. number of connections are in use.
-    #[n(2)] AtCapacity,
     /// The server challenge can not be decrypted.
-    #[n(3)] DecryptionFailed
+    #[n(2)] DecryptionFailed
+}
+
+impl fmt::Display for ErrorCode {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ErrorCode::CouldNotConnect   => f.write_str("could not connect"),
+            ErrorCode::AddressNotAllowed => f.write_str("address not allowed"),
+            ErrorCode::DecryptionFailed  => f.write_str("decryption failed")
+        }
+    }
 }
 
 /// Possible reasons for termination.

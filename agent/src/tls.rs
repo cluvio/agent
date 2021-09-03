@@ -25,7 +25,7 @@ impl Client {
     pub fn new(config: &crate::Config) -> Result<Self, Error> {
         let mut cfg = ClientConfig::new();
         cfg.root_store.add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
-        if let Some(certs) = &config.control.trust {
+        if let Some(certs) = &config.server.trust {
             for c in certs.iter() {
                 cfg.root_store.add(c)?
             }

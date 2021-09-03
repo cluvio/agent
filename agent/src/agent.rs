@@ -1,75 +1,70 @@
 use crate::{Reader, Writer};
-use crate::address::CheckedAddr;
-use crate::config::{Config, Network};
-use crate::connection::{self, Connection, Outcome};
+use crate::config::Config;
 use crate::error::Error;
+use crate::stream::{self, streamer};
 use crate::tls;
 use futures::future;
 use futures::stream::{FuturesUnordered, StreamExt};
 use humantime::format_duration;
-use minicbor_io::Error as CborError;
-use protocol::{Address, AgentId, Client, ConnectionType, ErrorCode, Id, Message, Opaque, Server};
+use protocol::{AgentId, Client, ErrorCode, Id, Message, Server};
 use protocol::{Reason, Version};
+use scopeguard::{ScopeGuard, guard};
 use sealed_boxes::decrypt;
 use std::borrow::Cow;
-use std::convert::identity;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
-use tokio::io;
 use tokio::net;
 use tokio::{select, spawn};
+use tokio::sync::mpsc;
 use tokio::task::JoinHandle;
 use tokio::time::{sleep, timeout};
-use tokio_util::compat::{TokioAsyncReadCompatExt, TokioAsyncWriteCompatExt};
+use tokio_util::compat::TokioAsyncReadCompatExt;
 use util::io::{send, recv};
 
 /// The connection agent.
-///
-/// It receives commands from the control server and attempts
-/// to bridge external systems with internal ones.
 #[derive(Debug)]
 pub struct Agent {
-    version: Version,
     id: AgentId,
+    version: Version,
     config: Arc<Config>,
     client: tls::Client,
     failures: u32,
     ping_state: PingState,
-    connected_timestamp: Option<Instant>,
-    connect_tasks: FuturesUnordered<JoinHandle<ConnectResult>>,
-    test_tasks: FuturesUnordered<JoinHandle<TestResult>>,
-    transfer_tasks: FuturesUnordered<JoinHandle<TransferResult>>,
-    notify_cap: bool
+    streams: FuturesUnordered<JoinHandle<Result<(), Error>>>,
+    tests: FuturesUnordered<JoinHandle<(Id, Option<ErrorCode>)>>,
+    connected_timestamp: Option<Instant>
 }
 
-/// The result of a connection attempt.
-#[derive(Debug)]
-struct ConnectResult {
-    /// Request ID of this connection attempt.
-    re: Id,
-    /// The internal address.
-    addr: CheckedAddr<'static>,
-    /// The result of this connection attempt.
-    conn: Result<Connection, Error>
+/// Connection parts.
+struct Connection {
+    /// The task handling the TCP connection.
+    task: JoinHandle<Result<(), yamux::ConnectionError>>,
+    /// The control handle to eventually close the connection.
+    ctrl: yamux::Control,
+    /// The control stream reader.
+    reader: Reader,
+    /// The control stream writer.
+    writer: Writer,
+    /// New inbound streams opened from remote.
+    inbound: mpsc::Receiver<yamux::Stream>
 }
 
-#[derive(Debug)]
-struct TransferResult {
-    /// Request ID of this connection attempt.
-    re: Id,
-    /// The internal address.
-    addr: CheckedAddr<'static>,
-    /// The result of this transfer.
-    result: Result<Outcome, Error>
+impl Drop for Agent {
+    fn drop(&mut self) {
+        for task in self.streams.iter() {
+            task.abort()
+        }
+        for task in self.tests.iter() {
+            task.abort()
+        }
+    }
 }
 
-/// The result of a connection test attempt.
-#[derive(Debug)]
-struct TestResult {
-    /// Request ID of this connection test attempt.
-    re: Id,
-    /// The test result.
-    result: Result<(), Error>
+impl Drop for Connection {
+    fn drop(&mut self) {
+        self.inbound.close();
+        self.task.abort();
+    }
 }
 
 /// Ping/Pong state.
@@ -85,17 +80,15 @@ impl Agent {
     pub fn new(cfg: Config) -> Result<Self, Error> {
         let client = tls::Client::new(&cfg)?;
         Ok(Agent {
+            id: AgentId::from(cfg.secret_key.public_key()),
             version: crate::version()?,
-            id: AgentId::from(cfg.private_key.public_key()),
             config: Arc::new(cfg),
             client,
             failures: 0,
             ping_state: PingState::Idle,
-            connected_timestamp: None,
-            transfer_tasks: futures_unordered(),
-            connect_tasks: futures_unordered(),
-            test_tasks: futures_unordered(),
-            notify_cap: false
+            streams: futures_unordered(),
+            tests: futures_unordered(),
+            connected_timestamp: None
         })
     }
 
@@ -108,7 +101,7 @@ impl Agent {
     /// This method will only return if the gateway terminates the agent with
     /// a reason (which is returned to the caller).
     pub async fn go(mut self) -> Reason {
-        let (mut reader, mut writer) = self.connect().await;
+        let mut connection = self.connect().await;
 
         log::info!(agent = %self.id, "up and running");
 
@@ -116,97 +109,65 @@ impl Agent {
         loop {
             log::trace!("awaiting event ...");
             select! {
-                // A new message from our control server.
-                message = recv(&mut reader) => match message {
+                // A new server message.
+                message = recv(&mut connection.reader) => match message {
                     Err(e) => {
-                        log::debug!("error reading from control server: {}", e);
-                        let (r, w) = self.reconnect(reader, writer).await;
-                        reader = r;
-                        writer = w
+                        log::debug!("error reading from server: {}", e);
+                        connection = self.reconnect(connection).await
                     }
                     Ok(None) => {
-                        log::debug!("connection to control server lost, reconnecting ...");
-                        let (r, w) = self.reconnect(reader, writer).await;
-                        reader = r;
-                        writer = w
+                        log::debug!("connection to server lost, reconnecting ...");
+                        connection = self.reconnect(connection).await
                     }
-                    Ok(Some(m)) => match self.on_message(&mut writer, m).await {
+                    Ok(Some(m)) => match self.on_message(&mut connection.writer, m).await {
                         Err(Error::Terminated(reason)) => return reason,
                         Err(e) => {
-                            log::debug!("failed to answer control server message: {}", e);
-                            let (r, w) = self.reconnect(reader, writer).await;
-                            reader = r;
-                            writer = w
+                            log::debug!("failed to answer server message: {}", e);
+                            connection = self.reconnect(connection).await
                         }
                         Ok(()) => {}
                     }
                 },
 
-                // A connection attempt completed.
-                Some(result) = self.connect_tasks.next() => {
-                    match result {
-                        Ok(res) =>
-                            if let Err(e) = self.on_established(&mut writer, res).await {
-                                log::debug!("failed to write control server message: {}", e);
-                                let (r, w) = self.reconnect(reader, writer).await;
-                                reader = r;
-                                writer = w
-                            }
-                        Err(er) =>
-                            if er.is_panic() {
-                                log::error!("connect task panic: {}", er)
-                            } else {
-                                log::debug!("connect task error: {}", er)
-                            }
+                // A new inbound stream has been opened.
+                stream = connection.inbound.recv() => match stream {
+                    None => {
+                        log::debug!("connection to server lost, reconnecting ...");
+                        connection = self.reconnect(connection).await
                     }
-                    if let Err(e) = self.notify_capacity(&mut writer).await {
-                        log::debug!("error sending message to control server: {}", e);
-                        let (r, w) = self.reconnect(reader, writer).await;
-                        reader = r;
-                        writer = w
+                    Some(s) => {
+                        log::debug!("new inbound stream");
+                        let cfg = self.config.clone();
+                        self.streams.push(spawn(streamer(cfg, s)))
                     }
                 },
 
-                // A connection test attempt completed.
-                Some(result) = self.test_tasks.next() => {
-                    match result {
-                        Ok(res) => if let Err(e) = self.on_connect_test(&mut writer, res).await {
-                            log::debug!("failed to write control server message: {}", e);
-                            let (r, w) = self.reconnect(reader, writer).await;
-                            reader = r;
-                            writer = w
+                // A connection test finished.
+                Some(test) = self.tests.next() => match test {
+                    Err(e) => {
+                        if e.is_panic() {
+                            log::error!("test task panic: {}", e)
+                        } else {
+                            log::debug!("test task error: {}", e)
                         }
-                        Err(er) =>
-                            if er.is_panic() {
-                                log::error!("connect test task panic: {}", er)
-                            } else {
-                                log::debug!("connect test task error: {}", er)
-                            }
                     }
-                    if let Err(e) = self.notify_capacity(&mut writer).await {
-                        log::debug!("error sending message to control server: {}", e);
-                        let (r, w) = self.reconnect(reader, writer).await;
-                        reader = r;
-                        writer = w
+                    Ok((re, code)) => {
+                        let data = Client::Test { re, code };
+                        if let Err(e) = send(&mut connection.writer, Message::new(data)).await {
+                            log::debug!("error sending message to server: {}", e);
+                            connection = self.reconnect(connection).await
+                        }
                     }
                 },
 
-                // A data transfer completed.
-                Some(result) = self.transfer_tasks.next() => {
-                    match result {
-                        Ok(out) => self.on_finished(out),
-                        Err(er) =>
-                            if er.is_panic() {
-                                log::error!("transfer task panic: {}", er)
-                            } else {
-                                log::debug!("transfer task error: {}", er)
-                            }
-                    }
-                    if let Err(e) = self.notify_capacity(&mut writer).await {
-                        log::debug!("error sending message to control server: {}", e);
-                        let (r, w) = self.reconnect(reader, writer).await;
-                        reader = r;
-                        writer = w
+                // A stream completed.
+                Some(result) = self.streams.next() => {
+                    if let Err(e) = result {
+                        if e.is_panic() {
+                            log::error!("stream task panic: {}", e)
+                        } else {
+                            log::debug!("stream task error: {}", e)
+                        }
                     }
                 }
 
@@ -214,43 +175,39 @@ impl Agent {
                 () = sleep(self.config.ping_frequency) => match self.ping_state {
                     PingState::Idle => {
                         let msg = Message::new(Client::Ping);
-                        if let Err(e) = send(&mut writer, &msg).await {
-                            log::debug!("error sending message to control server: {}", e);
-                            let (r, w) = self.reconnect(reader, writer).await;
-                            reader = r;
-                            writer = w
+                        if let Err(e) = send(&mut connection.writer, &msg).await {
+                            log::debug!("error sending message to server: {}", e);
+                            connection = self.reconnect(connection).await
                         } else {
                             self.ping_state = PingState::Awaiting(msg.id)
                         }
                     }
                     PingState::Awaiting(id) => {
-                        log::info!(msg = %id, "no pong from control server");
-                        let (r, w) = self.reconnect(reader, writer).await;
-                        reader = r;
-                        writer = w
+                        log::info!(msg = %id, "no pong from server");
+                        connection = self.reconnect(connection).await
                     }
                 }
             }
         }
     }
 
-    /// Handle message from control server.
-    async fn on_message(&mut self, writer: &mut Writer, msg: Message<Server<'_>>) -> Result<(), Error> {
+    /// Handle message from server.
+    async fn on_message(&mut self, writer: &mut Writer, msg: Message<Option<Server<'_>>>) -> Result<(), Error> {
         log::trace!(msg = %msg.id, "received message data: {:?}", msg.data);
 
         match msg.data {
-            Server::Ping => {
+            Some(Server::Ping) => {
                 send(writer, Message::new(Client::Pong { re: msg.id })).await?;
             }
-            Server::Pong { re } => {
+            Some(Server::Pong { re }) => {
                 if let PingState::Awaiting(p) = self.ping_state {
                     if re == p {
                         self.ping_state = PingState::Idle
                     }
                 }
             }
-            Server::Challenge { text } =>
-                match decrypt(&self.config.private_key, text.0) {
+            Some(Server::Challenge { text }) =>
+                match decrypt(&self.config.secret_key, text.0) {
                     Ok(plain) => {
                         let data = Client::Response {
                             re: msg.id,
@@ -268,175 +225,83 @@ impl Agent {
                         send(writer, Message::new(data)).await?;
                     }
                 }
-            Server::Bridge { ext, int, auth } =>
-                if self.has_capacity() {
-                    let ext = match check_addr("external", msg.id, ext, &self.config.external) {
-                        Ok(addr) => addr,
-                        Err(msg) => {
-                            send(writer, msg).await?;
-                            return Ok(())
-                        }
-                    };
-                    let int = match check_addr("internal", msg.id, int, &self.config.internal) {
-                        Ok(addr) => addr,
-                        Err(msg) => {
-                            send(writer, msg).await?;
-                            return Ok(())
-                        }
-                    };
-                    let config = self.config.clone();
-                    let client = self.client.clone();
-                    let auth = auth.into_owned();
-                    let id = msg.id;
-                    let version = self.version;
-                    self.connect_tasks.push(spawn(async move {
-                        let c = connection::establish(id, &config, &version, &client, &ext, auth);
-                        let r = timeout(config.connect_timeout, c).await
-                            .map_err(From::from)
-                            .and_then(identity);
-                        ConnectResult { re: id, addr: int, conn: r }
-                    }))
-                } else {
-                    let data = Client::Error {
-                        re: msg.id,
-                        code: Some(ErrorCode::AtCapacity),
-                        msg: None
-                    };
-                    send(writer, Message::new(data)).await?;
-                    self.notify_cap = true
-                }
-            Server::TestConnect { int } =>
-                if self.has_capacity() {
-                    let id  = msg.id;
-                    let int = match check_addr("internal", msg.id, int, &self.config.internal) {
-                        Ok(addr) => addr,
-                        Err(msg) => {
-                            send(writer, msg).await?;
-                            return Ok(())
-                        }
-                    };
-                    let config = self.config.clone();
-                    self.test_tasks.push(spawn(async move {
-                        TestResult {
-                            re: id,
-                            result: connection::connect(id, &config, &int).await.map(|_| ())
-                        }
-                    }))
-                } else {
-                    let data = Client::Error {
-                        re: msg.id,
-                        code: Some(ErrorCode::AtCapacity),
-                        msg: None
-                    };
-                    send(writer, Message::new(data)).await?;
-                    self.notify_cap = true
-                }
-            Server::DataAddress { .. } => {
-                log::error!(msg = %msg.id, "unexpected data address on control connection")
-            }
-            Server::Terminate { reason } => {
+            Some(Server::Terminate { reason }) => {
                 log::error!(msg = %msg.id, ?reason, "connection terminated by gateway");
                 return Err(Error::Terminated(reason))
             }
-        }
-        Ok(())
-    }
-
-    /// Handle connection attempt result.
-    async fn on_established(&mut self, writer: &mut Writer, c: ConnectResult) -> Result<(), CborError> {
-        let ConnectResult { re, addr, conn } = c;
-        match conn {
-            Err(e) => {
-                log::debug!(%re, "could not connect to external host: {}", e);
-                let data = Client::Error {
-                    re,
-                    code: Some(ErrorCode::CouldNotConnect),
-                    msg: Some(Cow::Owned(e.to_string()))
-                };
-                send(writer, Message::new(data)).await?;
-            }
-            Ok(conn) => {
-                log::debug!(%re, "connected to external host");
-                let data = Client::Established {
-                    re,
-                    data: Opaque {
-                        key_id: conn.witness.key_id,
-                        nonce: conn.witness.nonce,
-                        value: Cow::Borrowed(&conn.witness.value)
+            Some(Server::Test { addr }) => {
+                match stream::check_addr(addr, &self.config.allowed_addresses) {
+                    Err(code) => {
+                        let data = Client::Test { re: msg.id, code: Some(code) };
+                        send(writer, Message::new(data)).await?;
                     }
-                };
-                send(writer, Message::new(data)).await?;
-                let config = self.config.clone();
-                self.transfer_tasks.push(spawn(async move {
-                    let r = connection::bridge(re, &config, conn, &addr).await;
-                    TransferResult { re, addr, result: r }
-                }))
-            }
-        }
-        Ok(())
-    }
-
-    /// Handle connection test result.
-    async fn on_connect_test(&mut self, writer: &mut Writer, r: TestResult) -> Result<(), CborError> {
-        let TestResult { re, result } = r;
-        let data = match result {
-            Ok(()) => {
-                log::debug!(%re, "connected to internal host");
-                Client::TestConnectSuccess { re }
-            }
-            Err(e) => {
-                log::debug!(%re, "could not connect to internal host: {}", e);
-                Client::Error {
-                    re,
-                    code: Some(ErrorCode::CouldNotConnect),
-                    msg: Some(Cow::Owned(e.to_string()))
+                    Ok(addr) => {
+                        let id = msg.id;
+                        let cf = self.config.clone();
+                        self.tests.push(spawn(async move {
+                            if let Err(e) = stream::connect(id, &cf, &addr).await {
+                                log::debug!(msg = %id, "test connection failed: {}", e);
+                                (id, Some(ErrorCode::CouldNotConnect))
+                            } else {
+                                log::debug!(msg = %id, "test connection suceeded");
+                                (id, None)
+                            }
+                        }))
+                    }
                 }
             }
-        };
-        send(writer, Message::new(data)).await?;
+            None => {
+                log::debug!(id = %msg.id, "ignoring unknown gateway message")
+            }
+        }
         Ok(())
     }
 
-    /// Handle data transfer result.
-    fn on_finished(&mut self, result: TransferResult) {
-        match result.result {
-            Ok(out) =>
-                log::debug! {
-                    re = %result.re,
-                    from = %out.from,
-                    to = %out.to,
-                    rx = ?out.ext_to_int,
-                    tx = ?out.int_to_ext
-                },
-            Err(e) => {
-                log::warn!(re = %result.re, addr = %result.addr.addr(), "connection error: {}", e);
-            }
-        }
-    }
-
-    /// Connect to control server (with exponential backoff between failures).
-    async fn connect(&mut self) -> (Reader, Writer) {
-        async fn try_connect(client: &tls::Client, version: &Version, cfg: &Config) -> Result<(Reader, Writer), Error> {
-            let hostname = cfg.control.host.as_ref();
+    /// Connect to server (with exponential backoff between failures).
+    async fn connect(&mut self) -> Connection {
+        async fn try_connect(client: &tls::Client, version: &Version, cfg: &Config) -> Result<Connection, Error> {
+            let hostname = cfg.server.host.as_ref();
             let host_str: &str = hostname.into();
-            let port = cfg.control.port;
+            let port = cfg.server.port;
             log::debug!("connecting to {}:{} ...", host_str, port);
-            let iter = net::lookup_host((host_str, port)).await?;
-            let future = client.connect_any(iter, hostname);
-            let stream = timeout(cfg.connect_timeout, future).await??;
-            let (r, w) = io::split(stream);
-            let mut w  = Writer::new(w.compat_write());
-            let pubkey = cfg.private_key.public_key();
+            let iter     = net::lookup_host((host_str, port)).await?;
+            let future   = client.connect_any(iter, hostname);
+            let stream   = timeout(cfg.connect_timeout, future).await??;
+            let mut conn = yamux::Connection::new(stream.compat(), yamux::Config::default(), yamux::Mode::Client);
+            let mut ctrl = conn.control();
+            let (tx, rx) = mpsc::channel(16); // channel to announce new inbound streams
+            let task     = spawn(async move {
+                while let Some(s) = conn.next_stream().await? {
+                    match tx.try_send(s) {
+                        Ok(()) => {}
+                        Err(mpsc::error::TrySendError::Closed(_)) => break,
+                        Err(mpsc::error::TrySendError::Full(_)) => {
+                            log::warn!("dropping inbound stream")
+                        }
+                    }
+                }
+                Ok(())
+            });
+            let task   = guard(task, |t| t.abort()); // in case of error abort the task
+            let stream = ctrl.open_stream().await?;
+            let (r, w) = futures::io::AsyncReadExt::split(stream);
+            let mut w  = Writer::new(w);
+            let pubkey = cfg.secret_key.public_key();
             let hello  = Client::Hello {
                 pubkey: Cow::Borrowed(pubkey.as_bytes()[..].into()),
-                connection: ConnectionType::Control,
                 agent_version: *version
             };
             send(&mut w, Message::new(hello)).await?;
-            Ok((Reader::new(r.compat()), w))
+            Ok(Connection {
+                ctrl,
+                reader: Reader::new(r),
+                writer: w,
+                task: ScopeGuard::into_inner(task),
+                inbound: rx
+            })
         }
-        let host = self.config.control.host.as_ref();
-        let port = self.config.control.port;
+        let host = self.config.server.host.as_ref();
+        let port = self.config.server.port;
         loop {
             if let Some(ts) = self.connected_timestamp {
                 let delta = Instant::now() - ts;
@@ -446,12 +311,12 @@ impl Agent {
                 }
             }
             match try_connect(&self.client, &self.version, &self.config).await {
-                Ok((r, w)) => {
-                    log::debug!("connected to control server: {}:{}", <&str>::from(host), port);
+                Ok(conn) => {
+                    log::debug!("connected to server: {}:{}", <&str>::from(host), port);
                     self.failures = 0;
                     self.ping_state = PingState::Idle;
                     self.connected_timestamp = Some(Instant::now());
-                    return (r, w)
+                    return conn
                 }
                 Err(e) => {
                     self.connected_timestamp = None;
@@ -470,70 +335,25 @@ impl Agent {
         }
     }
 
-    /// Reconnect to control server (with exponential backoff between failures).
+    /// Reconnect to server (with exponential backoff between failures).
     ///
     /// We consume the existing reader and writer to trigger an immediate
     /// close of the current connection.
-    async fn reconnect(&mut self, _r: Reader, _w: Writer) -> (Reader, Writer) {
-        let rw = self.connect().await;
-        if !self.connect_tasks.is_empty() {
-            // Cancel all ongoing connect attempts, as we can not report back
-            // to the original control server. Data transfers should not be
-            // affected.
-            for j in self.connect_tasks.iter() {
-                j.abort()
-            }
-            self.connect_tasks = futures_unordered()
+    async fn reconnect(&mut self, mut conn: Connection) -> Connection {
+        if let Err(e) = timeout(Duration::from_secs(5), conn.ctrl.close()).await {
+            log::debug!("error closing connection: {}", e)
         }
-        rw
-    }
-
-    /// If necessary, tell control server that we can handle more connections.
-    async fn notify_capacity(&mut self, writer: &mut Writer) -> Result<(), CborError> {
-        if self.notify_cap && self.has_capacity() {
-            send(writer, Message::new(Client::Available)).await?;
-            self.notify_cap = false
-        }
-        Ok(())
-    }
-
-    /// Do we still have capacity for more connections?
-    fn has_capacity(&self) -> bool {
-        let n = self.connect_tasks.len()
-            .saturating_add(self.transfer_tasks.len())
-            .saturating_sub(2); // do not count sentinel tasks
-        n < usize::from(self.config.max_connections)
+        drop(conn);
+        self.connect().await
     }
 }
 
 /// Create a new `FuturesUnordered` value with a sentinel task.
 ///
 /// The sentinel will never finish and ensures that awaiting on an otherwise
-/// empty FuturesUnordered will not immediately produce a `Poll::Ready(None)`.
+/// empty `FuturesUnordered` will not immediately produce a `Poll::Ready(None)`.
 fn futures_unordered<T: Send + 'static>() -> FuturesUnordered<JoinHandle<T>> {
     let f = FuturesUnordered::new();
     f.push(spawn(future::pending()));
     f
-}
-
-/// Check that an address is whitelisted.
-fn check_addr<'a, 'b>
-    ( ctx: &str
-    , id: Id
-    , addr: Address<'_>
-    , whitelist: &[Network]
-    ) -> Result<CheckedAddr<'a>, Message<Client<'b>>>
-{
-    match CheckedAddr::check(addr.into_owned(), whitelist) {
-        Ok(addr)  => Ok(addr),
-        Err(addr) => {
-            log::error!(address = %addr, "{} address not allowed", ctx);
-            let msg = Message::new(Client::Error {
-                re: id,
-                code: Some(ErrorCode::AddressNotAllowed),
-                msg: None
-            });
-            Err(msg)
-        }
-    }
 }

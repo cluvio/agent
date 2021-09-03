@@ -53,7 +53,7 @@ impl Installer {
                 .push("download")
                 .push(&format!("v{}", version));
 
-            download(&mut self.console, &temp_path, &archive, &download_url).context("Download failed.")?
+            download(&mut self.console, temp_path, &archive, &download_url).context("Download failed.")?
         }
 
         match create_dir(&mut self.console, &self.directory)? {
@@ -66,7 +66,7 @@ impl Installer {
             archive.to_string_lossy().bold(),
             self.directory.to_string_lossy().bold()
         })?;
-        extract(&temp_path, &temp_path.join(archive), &self.directory)?;
+        extract(temp_path, &temp_path.join(archive), &self.directory)?;
         section.end()?;
 
         let section = self.console.begin(format! {
