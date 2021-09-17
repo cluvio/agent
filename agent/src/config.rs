@@ -58,7 +58,7 @@ pub struct Config {
     #[serde(default = "default_net")]
     pub allowed_addresses: NonEmpty<Network>,
 
-    /// Control server settings.
+    /// Server settings.
     pub server: Server
 }
 

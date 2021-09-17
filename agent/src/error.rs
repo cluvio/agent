@@ -35,6 +35,6 @@ pub enum Error {
     Yamux(#[from] yamux::ConnectionError),
 
     #[error("invalid version: {0}")]
-    Version(#[source] Box<dyn std::error::Error + Send>)
+    Version(#[source] Box<dyn std::error::Error + Send + Sync>)
 }
 
