@@ -57,7 +57,7 @@ impl Updater {
                 .push("download")
                 .push(&format!("v{}", version));
 
-            download(&mut self.console, &temp_path, &archive, &download_url).context("Download failed.")?
+            download(&mut self.console, temp_path, &archive, &download_url).context("Download failed.")?
         }
 
         let section = self.console.begin(format! {
@@ -65,9 +65,9 @@ impl Updater {
             archive.to_string_lossy().bold(),
             self.directory.to_string_lossy().bold()
         })?;
-        install::extract(&temp_path, &archive, &temp_path).context("Failed to extract archive.")?;
+        install::extract(temp_path, &archive, temp_path).context("Failed to extract archive.")?;
         section.end()?;
-        self.copy(&temp_path, &[archive.as_os_str()])?;
+        self.copy(temp_path, &[archive.as_os_str()])?;
 
         self.console.print(format!("{}\n", "Update complete.".green().bold()))?;
 
@@ -107,7 +107,7 @@ impl Updater {
             .output()
             .with_context(|| format!("Error executing {:?}.", path))?;
         if !out.status.success() {
-            return Err(anyhow!("Failed to get version information from {:?}.", path))?;
+            return Err(anyhow!("Failed to get version information from {:?}.", path));
         }
         let v = {
             let s = str::from_utf8(&out.stdout)?.trim();

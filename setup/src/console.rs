@@ -7,7 +7,7 @@ use std::ops::{Deref, DerefMut};
 pub struct Answer<'a>(&'a str);
 
 impl<'a> Answer<'a> {
-    pub fn is_any_of(self, items: impl IntoIterator<Item = &'a str>) -> bool {
+    pub fn is_any_of(&self, items: impl IntoIterator<Item = &'a str>) -> bool {
         for s in items {
             if s == self.0 {
                 return true
@@ -21,7 +21,7 @@ impl Deref for Answer<'_> {
     type Target = str;
 
     fn deref(&self) -> &Self::Target {
-        &self.0
+        self.0
     }
 }
 
@@ -71,7 +71,7 @@ impl Section<'_> {
         self.0.stdout.execute(cursor::MoveToColumn(3))?;
         say(&mut self.0.stdout, format!("{}", "OK".green()))?;
         self.0.stdout.execute(cursor::RestorePosition)?;
-        println!("");
+        println!();
         self.1 = false;
         Ok(())
     }
@@ -84,7 +84,7 @@ impl Drop for Section<'_> {
             let _ = self.0.stdout.execute(cursor::MoveToColumn(3));
             let _ = say(&mut self.0.stdout, format!("{}", "ER".red()));
             let _ = self.0.stdout.execute(cursor::RestorePosition);
-            println!("");
+            println!();
         }
     }
 }
@@ -93,7 +93,7 @@ impl Deref for Section<'_> {
     type Target = Console;
 
     fn deref(&self) -> &Self::Target {
-        &self.0
+        self.0
     }
 }
 

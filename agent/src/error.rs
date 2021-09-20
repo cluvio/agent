@@ -1,4 +1,4 @@
-use protocol::{Id, Reason};
+use protocol::Reason;
 use std::io;
 use thiserror::Error;
 use tokio::time::error::Elapsed;
@@ -25,22 +25,16 @@ pub enum Error {
     #[error("timeout: {0}")]
     Timeout(#[from] Elapsed),
 
-    #[error("unexpected {0}, was expecting {1}")]
-    Unexpected(&'static str, &'static str),
-
     #[error("host {0} not reachable")]
     Unreachable(String),
-
-    #[error("id mismatch {expected} != {actual}")]
-    Mismatch {
-        expected: Id,
-        actual: Id
-    },
 
     #[error("agent is terminated, reason: {0:?}")]
     Terminated(Reason),
 
-    #[error("other error: {0}")]
-    Other(#[source] Box<dyn std::error::Error + Send>)
+    #[error("multiplex error: {0}")]
+    Yamux(#[from] yamux::ConnectionError),
+
+    #[error("invalid version: {0}")]
+    Version(#[source] Box<dyn std::error::Error + Send + Sync>)
 }
 

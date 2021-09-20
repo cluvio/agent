@@ -2,7 +2,7 @@ use minicbor::{Encode, Decode};
 use std::time::{Duration, SystemTime, SystemTimeError, UNIX_EPOCH};
 
 /// A UNIX timestamp, i.e. seconds since 1970-01-01 00:00:00 UTC.
-#[derive(Debug, Decode, Encode, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Copy, Clone, Debug, Decode, Encode, PartialEq, Eq, PartialOrd, Ord)]
 #[cbor(transparent)]
 pub struct UnixTime(#[n(0)] u64);
 
