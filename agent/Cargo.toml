@@ -23,7 +23,7 @@ tokio-rustls = "0.22"
 tokio-util   = { version = "0.6.5", features = ["compat"] }
 toml         = "0.5.8"
 util         = { path = "../util" }
-webpki-roots = "0.21"
+webpki-roots = "0.22"
 yamux        = "0.9.0"
 
 [dependencies.tokio]
