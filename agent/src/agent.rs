@@ -269,7 +269,7 @@ impl Agent {
             let stream   = timeout(cfg.connect_timeout, future).await??;
             let mut conn = yamux::Connection::new(stream.compat(), yamux::Config::default(), yamux::Mode::Client);
             let mut ctrl = conn.control();
-            let (tx, rx) = mpsc::channel(16); // channel to announce new inbound streams
+            let (tx, rx) = mpsc::channel(2048); // channel to announce new inbound streams
             let task     = spawn(async move {
                 while let Some(s) = conn.next_stream().await? {
                     match tx.try_send(s) {
