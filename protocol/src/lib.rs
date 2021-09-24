@@ -19,16 +19,16 @@ pub struct Message<D> {
     /// The identifier of this message.
     #[n(0)] pub id: Id,
     /// The payload data of this message.
-    #[n(1)] pub data: D
+    #[n(1)] pub data: Option<D>
 }
 
 impl<D> Message<D> {
     pub fn new(data: D) -> Self {
-        Message { id: Id::fresh(), data }
+        Message { id: Id::fresh(), data: Some(data) }
     }
 
     pub fn new_with_id(id: Id, data: D) -> Self {
-        Message { id, data }
+        Message { id, data: Some(data) }
     }
 }
 

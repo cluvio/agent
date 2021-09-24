@@ -1,4 +1,4 @@
-use protocol::Reason;
+use protocol::{Id, Reason};
 use std::io;
 use thiserror::Error;
 use tokio::time::error::Elapsed;
@@ -35,6 +35,9 @@ pub enum Error {
     Yamux(#[from] yamux::ConnectionError),
 
     #[error("invalid version: {0}")]
-    Version(#[source] Box<dyn std::error::Error + Send + Sync>)
+    Version(#[source] Box<dyn std::error::Error + Send + Sync>),
+
+    #[error("unknown message type: {0}")]
+    UnknownMessageType(Id)
 }
 

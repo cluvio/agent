@@ -192,7 +192,7 @@ impl Agent {
     }
 
     /// Handle message from server.
-    async fn on_message(&mut self, writer: &mut Writer, msg: Message<Option<Server<'_>>>) -> Result<(), Error> {
+    async fn on_message(&mut self, writer: &mut Writer, msg: Message<Server<'_>>) -> Result<(), Error> {
         log::trace!(msg = %msg.id, "received message data: {:?}", msg.data);
 
         match msg.data {

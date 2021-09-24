@@ -20,7 +20,7 @@ pub async fn streamer(config: Arc<Config>, stream: yamux::Stream) -> Result<(), 
     let mut writer = Writer::new(w);
 
     let (id, addr) = match recv(&mut reader).await? {
-        Some(Message { id, data: Connect { addr }, .. }) => {
+        Some(Message { id, data: Some(Connect { addr }), .. }) => {
             match check_addr(addr, &config.allowed_addresses) {
                 Ok(addr)  => (id, addr),
                 Err(code) => {
@@ -29,6 +29,7 @@ pub async fn streamer(config: Arc<Config>, stream: yamux::Stream) -> Result<(), 
                 }
             }
         }
+        Some(Message { id, data: None, .. }) => return Err(Error::UnknownMessageType(id)),
         None => return Err(Error::Io(io::ErrorKind::UnexpectedEof.into()))
     };
 
