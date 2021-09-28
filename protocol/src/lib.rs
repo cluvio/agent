@@ -61,7 +61,10 @@ pub enum Server<'a> {
     #[n(4)] Test {
         /// The upstream address.
         #[b(0)] addr: Address<'a>
-    }
+    },
+
+    /// Open a new connection and drain the existing one.
+    #[n(5)] SwitchToNewConnection
 }
 
 // Custom impl to skip over sensitive data.
@@ -77,7 +80,9 @@ impl fmt::Debug for Server<'_> {
             Server::Terminate { reason } =>
                 f.debug_struct("Terminate").field("reason", reason).finish(),
             Server::Test { addr } =>
-                f.debug_struct("Test").field("addr", addr).finish()
+                f.debug_struct("Test").field("addr", addr).finish(),
+            Server::SwitchToNewConnection =>
+                f.debug_struct("SwitchToNewConnection").finish()
         }
     }
 }
@@ -128,6 +133,11 @@ pub enum Client<'a> {
         #[n(0)] re: Id,
         /// The optional error code.
         #[n(1)] code: Option<ErrorCode>
+    },
+
+    /// Opening a new connection and draining the existing one.
+    #[n(6)] SwitchingConnection {
+        #[n(0)] re: Id
     }
 }
 
@@ -153,6 +163,10 @@ impl fmt::Debug for Client<'_> {
                 f.debug_struct("Test")
                  .field("re", re)
                  .field("code", code)
+                 .finish(),
+            Client::SwitchingConnection { re } =>
+                f.debug_struct("SwitchingConnection")
+                 .field("re", re)
                  .finish()
         }
     }

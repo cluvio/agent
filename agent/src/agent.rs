@@ -4,13 +4,14 @@ use crate::error::Error;
 use crate::stream::{self, streamer};
 use crate::tls;
 use futures::future;
-use futures::stream::{FuturesUnordered, StreamExt};
+use futures::stream::{BoxStream, FuturesUnordered, SelectAll, StreamExt};
 use humantime::format_duration;
 use protocol::{AgentId, Client, ErrorCode, Id, Message, Server};
 use protocol::{Reason, Version};
 use scopeguard::{ScopeGuard, guard};
 use sealed_boxes::decrypt;
 use std::borrow::Cow;
+use std::mem;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tokio::net;
@@ -22,7 +23,6 @@ use tokio_util::compat::TokioAsyncReadCompatExt;
 use util::io::{send, recv};
 
 /// The connection agent.
-#[derive(Debug)]
 pub struct Agent {
     id: AgentId,
     version: Version,
@@ -32,6 +32,7 @@ pub struct Agent {
     ping_state: PingState,
     streams: FuturesUnordered<JoinHandle<Result<(), Error>>>,
     tests: FuturesUnordered<JoinHandle<(Id, Option<ErrorCode>)>>,
+    drainage: SelectAll<BoxStream<'static, yamux::Stream>>,
     connected_timestamp: Option<Instant>
 }
 
@@ -88,6 +89,11 @@ impl Agent {
             ping_state: PingState::Idle,
             streams: futures_unordered(),
             tests: futures_unordered(),
+            drainage: {
+                let mut s = SelectAll::new();
+                s.push(futures::stream::pending().boxed());
+                s
+            },
             connected_timestamp: None
         })
     }
@@ -125,7 +131,14 @@ impl Agent {
                             log::debug!("failed to answer server message: {}", e);
                             connection = self.reconnect(connection).await
                         }
-                        Ok(()) => {}
+                        Ok(Some(mut conn)) => {
+                            mem::swap(&mut connection, &mut conn);
+                            let drain = futures::stream::unfold(conn, |mut conn| async move {
+                                conn.inbound.recv().await.map(|s| (s, conn))
+                            });
+                            self.drainage.push(drain.boxed())
+                        }
+                        Ok(None) => {}
                     }
                 },
 
@@ -140,6 +153,13 @@ impl Agent {
                         let cfg = self.config.clone();
                         self.streams.push(spawn(streamer(cfg, s)))
                     }
+                },
+
+                // A new inbound stream has been opened.
+                stream = self.drainage.next() => if let Some(s) = stream {
+                    log::debug!("new inbound stream while draining");
+                    let cfg = self.config.clone();
+                    self.streams.push(spawn(streamer(cfg, s)))
                 },
 
                 // A connection test finished.
@@ -192,7 +212,7 @@ impl Agent {
     }
 
     /// Handle message from server.
-    async fn on_message(&mut self, writer: &mut Writer, msg: Message<Server<'_>>) -> Result<(), Error> {
+    async fn on_message(&mut self, writer: &mut Writer, msg: Message<Server<'_>>) -> Result<Option<Connection>, Error> {
         log::trace!(msg = %msg.id, "received message data: {:?}", msg.data);
 
         match msg.data {
@@ -250,11 +270,17 @@ impl Agent {
                     }
                 }
             }
+            Some(Server::SwitchToNewConnection) => {
+                log::debug!(id = %msg.id, "switching to new connection and draining the existing one");
+                send(writer, Message::new(Client::SwitchingConnection { re: msg.id })).await?;
+                let c = self.connect().await;
+                return Ok(Some(c))
+            }
             None => {
                 log::debug!(id = %msg.id, "ignoring unknown gateway message")
             }
         }
-        Ok(())
+        Ok(None)
     }
 
     /// Connect to server (with exponential backoff between failures).
