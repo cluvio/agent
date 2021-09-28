@@ -157,7 +157,7 @@ impl Agent {
 
                 // A new inbound stream has been opened.
                 stream = self.drainage.next() => if let Some(s) = stream {
-                    log::debug!("new inbound stream");
+                    log::debug!("new inbound stream while draining");
                     let cfg = self.config.clone();
                     self.streams.push(spawn(streamer(cfg, s)))
                 },
