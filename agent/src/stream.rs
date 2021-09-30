@@ -6,12 +6,18 @@ use protocol::{Address, ErrorCode, Id, Message, Connect};
 use socket2::{Socket, TcpKeepalive};
 use std::net::SocketAddr;
 use std::sync::Arc;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use tokio::net::{self, TcpStream};
 use tokio::io::{self, AsyncWriteExt};
 use tokio::time::timeout;
 use tokio_util::compat::{FuturesAsyncReadCompatExt, FuturesAsyncWriteCompatExt};
 use util::io::{send, recv};
+
+/// Data sent and received.
+struct SendRecv {
+    sent: Option<io::Result<u64>>,
+    recv: Option<io::Result<u64>>
+}
 
 /// Handles a single Yamux stream.
 pub async fn streamer(config: Arc<Config>, stream: yamux::Stream) -> Result<(), Error> {
@@ -19,10 +25,10 @@ pub async fn streamer(config: Arc<Config>, stream: yamux::Stream) -> Result<(), 
     let mut reader = Reader::new(r);
     let mut writer = Writer::new(w);
 
-    let (id, addr) = match recv(&mut reader).await? {
-        Some(Message { id, data: Some(Connect { addr }), .. }) => {
+    let (id, addr, use_half_close) = match recv(&mut reader).await? {
+        Some(Message { id, data: Some(Connect { addr, use_half_close }), .. }) => {
             match check_addr(addr, &config.allowed_addresses) {
-                Ok(addr)  => (id, addr),
+                Ok(addr)  => (id, addr, use_half_close.unwrap_or(false)),
                 Err(code) => {
                     send(&mut writer, Message::new(Err::<(), _>(code))).await?;
                     return Ok(())
@@ -47,26 +53,72 @@ pub async fn streamer(config: Arc<Config>, stream: yamux::Stream) -> Result<(), 
         };
 
     send(&mut writer, Message::new(Ok::<_, ErrorCode>(()))).await?;
-    let mut reader = reader.into_parts().0.compat();
-    let mut writer = writer.into_parts().0.compat_write();
-    let (mut r, mut w) = io::split(socket);
 
-    let (received, sent) = tokio::join! {
-        async move {
-            let result = io::copy(&mut reader, &mut w).await;
-            w.shutdown().await?;
+    let reader = reader.into_parts().0.compat();
+    let writer = writer.into_parts().0.compat_write();
+    let start  = Instant::now();
+    let result =
+        if use_half_close {
+            transfer_hc(socket, reader, writer).await?
+        } else {
+            transfer_fc(socket, reader, writer).await?
+        };
+
+    log::debug! {
+        id   = %id,
+        to   = %addr.addr(),
+        recv = ?result.recv,
+        sent = ?result.sent,
+        time = %start.elapsed().as_secs(),
+        "data transfer finished"
+    };
+
+    Ok(())
+}
+
+/// Transfer with half-close.
+async fn transfer_hc<R, W>(tcp: TcpStream, mut stream_r: R, mut stream_w: W) -> io::Result<SendRecv>
+where
+    R: io::AsyncRead + Unpin,
+    W: io::AsyncWrite + Unpin
+{
+    let (mut socket_r, mut socket_w) = io::split(tcp);
+
+    let result = tokio::join! {
+        // send to gateway
+        async {
+            let result = io::copy(&mut socket_r, &mut stream_w).await;
+            stream_w.shutdown().await?;
             result
         },
-        async move {
-            let result = io::copy(&mut r, &mut writer).await;
-            writer.shutdown().await?;
+        // receive from gateway
+        async {
+            let result = io::copy(&mut stream_r, &mut socket_w).await;
+            socket_w.shutdown().await?;
             result
         }
     };
 
-    log::debug!(%id, ?received, ?sent, "connection to {} terminated", addr.addr());
+    Ok(SendRecv { sent: Some(result.0), recv: Some(result.1) })
+}
 
-    Ok(())
+/// Transfer with full-close.
+async fn transfer_fc<R, W>(tcp: TcpStream, mut stream_r: R, mut stream_w: W) -> io::Result<SendRecv>
+where
+    R: io::AsyncRead + Unpin,
+    W: io::AsyncWrite + Unpin
+{
+    let (mut socket_r, mut socket_w) = io::split(tcp);
+
+    let result = tokio::select! {
+        // send to gateway
+        r = io::copy(&mut socket_r, &mut stream_w) => SendRecv { sent: Some(r), recv: None },
+        // receive from gateway
+        r = io::copy(&mut stream_r, &mut socket_w) => SendRecv { sent: None, recv: Some(r) }
+    };
+
+    stream_w.shutdown().await?;
+    Ok(result)
 }
 
 /// Check that an address is whitelisted.

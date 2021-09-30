@@ -174,8 +174,12 @@ impl fmt::Debug for Client<'_> {
 
 /// Establish connection to the given address and transfer data back and forth.
 #[derive(Debug, Decode, Encode)]
+#[cbor(map)]
 pub struct Connect<'a> {
-    #[b(0)] pub addr: Address<'a>
+    /// The address to connect to.
+    #[b(0)] pub addr: Address<'a>,
+    /// The connection uses half-close (None = false).
+    #[n(1)] pub use_half_close: Option<bool>
 }
 
 /// A network address.
