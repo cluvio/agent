@@ -32,7 +32,7 @@ default-features = false
 features = ["io-util", "macros", "net", "rt-multi-thread", "time", "sync"]
 
 [dependencies.tracing-subscriber]
-version = "0.2.20"
+version = "0.2.25"
 
 [dev-dependencies]
 quickcheck = "1.0.3"
