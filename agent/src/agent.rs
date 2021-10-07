@@ -293,7 +293,11 @@ impl Agent {
             let iter     = net::lookup_host((host_str, port)).await?;
             let future   = client.connect_any(iter, hostname);
             let stream   = timeout(cfg.connect_timeout, future).await??;
-            let mut conn = yamux::Connection::new(stream.compat(), yamux::Config::default(), yamux::Mode::Client);
+            let mut conn = {
+                let mut cfg = yamux::Config::default();
+                cfg.set_window_update_mode(yamux::WindowUpdateMode::OnRead);
+                yamux::Connection::new(stream.compat(), cfg, yamux::Mode::Client)
+            };
             let mut ctrl = conn.control();
             let (tx, rx) = mpsc::channel(2048); // channel to announce new inbound streams
             let task     = spawn(async move {
