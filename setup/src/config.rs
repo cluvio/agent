@@ -17,7 +17,6 @@ const CONFIG_TEMPLATE: &str = indoc! {r#"
 
     [server]
     host = "<HOST>"
-    port = 9000
 "#};
 
 pub fn create_config<P>(dir: P, loc: Location) -> Result<PublicKey>
