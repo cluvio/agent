@@ -16,7 +16,7 @@ semver       = { version = "1.0.4", features = ["serde"] }
 structopt    = "0.3.21"
 tar          = "0.4.37"
 tempfile     = "3.2.0"
-thiserror    = "1.0.24"
+thiserror    = "1.0.30"
 util         = { path = "../util" }
 walkdir      = "2.3.2"
 xz2          = "0.1.6"
