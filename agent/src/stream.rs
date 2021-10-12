@@ -69,7 +69,7 @@ pub async fn streamer(config: Arc<Config>, stream: yamux::Stream) -> Result<(), 
         to   = %addr.addr(),
         recv = ?result.recv,
         sent = ?result.sent,
-        time = %start.elapsed().as_secs(),
+        time = %start.elapsed().as_secs_f32(),
         "data transfer finished"
     };
 
