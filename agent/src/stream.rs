@@ -147,7 +147,7 @@ pub async fn connect(re: Id, cfg: &Config, addr: &CheckedAddr<'_>) -> Result<Tcp
             .with_time(Duration::from_secs(30))
             .with_interval(Duration::from_secs(10));
 
-    log::debug!(%re, "connecting to internal address {}", addr.addr());
+    log::debug!(id = %re, "connecting to internal address {}", addr.addr());
     let iter = resolve(addr).await?;
     let sock = timeout(cfg.connect_timeout, connect_any(iter, addr)).await??;
     let sock = Socket::from(sock.into_std()?);

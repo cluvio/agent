@@ -178,7 +178,7 @@ impl Agent {
                     Ok((re, code)) => {
                         let data = Client::Test { re, code };
                         if let Err(e) = send(&mut connection.writer, Message::new(data)).await {
-                            log::debug!("error sending message to server: {}", e);
+                            log::debug!(id = %re, "error sending message to server: {}", e);
                             connection = self.reconnect(connection).await
                         }
                     }
@@ -207,7 +207,7 @@ impl Agent {
                         }
                     }
                     PingState::Awaiting(id) => {
-                        log::info!(msg = %id, "no pong from server");
+                        log::info!(%id, "no pong from server");
                         connection = self.reconnect(connection).await
                     }
                 }
@@ -217,7 +217,7 @@ impl Agent {
 
     /// Handle message from server.
     async fn on_message(&mut self, writer: &mut Writer, msg: Message<Server<'_>>) -> Result<Option<Connection>, Error> {
-        log::trace!(msg = %msg.id, "received message data: {:?}", msg.data);
+        log::trace!(id = %msg.id, "received message data: {:?}", msg.data);
 
         match msg.data {
             Some(Server::Ping) => {
@@ -240,7 +240,7 @@ impl Agent {
                         send(writer, Message::new(data)).await?;
                     }
                     Err(e) => {
-                        log::debug!(msg = %msg.id, "failed to decrypt challenge: {}", e);
+                        log::debug!(id = %msg.id, "failed to decrypt challenge: {}", e);
                         let data = Client::Error {
                             re: msg.id,
                             code: Some(ErrorCode::DecryptionFailed),
@@ -250,7 +250,7 @@ impl Agent {
                     }
                 }
             Some(Server::Terminate { reason }) => {
-                log::error!(msg = %msg.id, ?reason, "connection terminated by gateway");
+                log::error!(id = %msg.id, ?reason, "connection terminated by gateway");
                 return Err(Error::Terminated(reason))
             }
             Some(Server::Test { addr }) => {
@@ -264,10 +264,10 @@ impl Agent {
                         let cf = self.config.clone();
                         self.tests.push(spawn(async move {
                             if let Err(e) = stream::connect(id, &cf, &addr).await {
-                                log::debug!(msg = %id, "test connection failed: {}", e);
+                                log::debug!(%id, "test connection failed: {}", e);
                                 (id, Some(ErrorCode::CouldNotConnect))
                             } else {
-                                log::debug!(msg = %id, "test connection suceeded");
+                                log::debug!(%id, "test connection suceeded");
                                 (id, None)
                             }
                         }))
