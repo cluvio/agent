@@ -10,7 +10,7 @@ mod tls;
 pub mod config;
 
 /// Version of this crate.
-fn version() -> Result<protocol::Version, Error> {
+pub fn version() -> Result<protocol::Version, Error> {
     let parse = |s: &str| s.parse().map_err(|e| Error::Version(Box::new(e)));
     let major = parse(env!("CARGO_PKG_VERSION_MAJOR"))?;
     let minor = parse(env!("CARGO_PKG_VERSION_MINOR"))?;

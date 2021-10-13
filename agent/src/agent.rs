@@ -1,4 +1,4 @@
-use crate::{Reader, Writer};
+use crate::{Reader, Writer, version};
 use crate::config::Config;
 use crate::error::Error;
 use crate::stream::{self, streamer};
@@ -109,7 +109,11 @@ impl Agent {
     pub async fn go(mut self) -> Reason {
         let mut connection = self.connect().await;
 
-        log::info!(agent = %self.id, "up and running");
+        log::info! {
+            agent   = %self.id,
+            version = %version().expect("valid version"),
+            "up and running"
+        };
 
         // Event processing.
         loop {

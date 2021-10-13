@@ -7,7 +7,7 @@ async fn main() {
     let opts = Options::from_args();
 
     if opts.version {
-        println!("{}", env!("CARGO_PKG_VERSION"));
+        println!("{}", agent::version().unwrap_or_else(exit("version")));
         return
     }
 
