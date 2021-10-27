@@ -20,7 +20,7 @@ impl<'a> CheckedAddr<'a> {
             Address::Name(addr, _) => whitelist.iter().any(|net| {
                 match net {
                     Network::Ip(_)  => false,
-                    Network::Dns(n) => <&str>::from(n.as_ref()) == addr,
+                    Network::Dns(n) => n.as_str() == addr,
                     Network::Pat(p) => p.matches(addr)
                 }
             })

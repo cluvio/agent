@@ -290,8 +290,8 @@ impl Agent {
     /// Connect to server (with exponential backoff between failures).
     async fn connect(&mut self) -> Connection {
         async fn try_connect(client: &tls::Client, version: &Version, cfg: &Config) -> Result<Connection, Error> {
-            let hostname = cfg.server.host.as_ref();
-            let host_str: &str = hostname.into();
+            let hostname = &cfg.server.host;
+            let host_str = hostname.as_str();
             let port = cfg.server.port;
             log::debug!("connecting to {}:{} ...", host_str, port);
             let iter     = net::lookup_host((host_str, port)).await?;
@@ -334,7 +334,7 @@ impl Agent {
                 inbound: rx
             })
         }
-        let host = self.config.server.host.as_ref();
+        let host = &self.config.server.host;
         let port = self.config.server.port;
         loop {
             if let Some(ts) = self.connected_timestamp {
@@ -346,7 +346,7 @@ impl Agent {
             }
             match try_connect(&self.client, &self.version, &self.config).await {
                 Ok(conn) => {
-                    log::debug!("connected to server: {}:{}", <&str>::from(host), port);
+                    log::debug!("connected to server: {}:{}", host.as_str(), port);
                     self.failures = 0;
                     self.ping_state = PingState::Idle;
                     self.connected_timestamp = Some(Instant::now());
@@ -357,7 +357,7 @@ impl Agent {
                     let duration = Duration::from_secs(2u64.pow(self.failures));
                     log::warn! {
                         "failed to connect to {}:{}: {}; trying again in {} ...",
-                        <&str>::from(host),
+                        host.as_str(),
                         port,
                         e,
                         format_duration(duration)

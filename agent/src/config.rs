@@ -10,10 +10,9 @@ use std::str::FromStr;
 use std::time::Duration;
 use structopt::StructOpt;
 use tokio_rustls::rustls::Certificate;
-use util::NonEmpty;
+use util::{HostName, NonEmpty};
 
 pub use ipnet::{IpNet, Ipv4Net, Ipv6Net};
-pub use tokio_rustls::webpki::{DNSName, DNSNameRef};
 
 /// Command-line options.
 #[derive(Debug, StructOpt)]
@@ -67,7 +66,7 @@ pub enum Network {
     /// IP network.
     Ip(IpNet),
     /// A DNS name.
-    Dns(DNSName),
+    Dns(HostName),
     /// A DNS name pattern.
     Pat(DnsPattern),
 }
@@ -86,7 +85,7 @@ impl<'de> Deserialize<'de> for Network {
         if let Ok(net) = IpNet::from_str(&s) {
             return Ok(Network::Ip(net))
         }
-        if let Ok(dns) = DNSNameRef::try_from_ascii_str(&s).map(DNSName::from) {
+        if let Ok(dns) = HostName::try_from(&*s) {
             return Ok(Network::Dns(dns))
         }
         if let Ok(pat) = DnsPattern::try_from(s.borrow()) {
@@ -97,7 +96,7 @@ impl<'de> Deserialize<'de> for Network {
 }
 
 impl Config {
-    pub fn new(sk: SecretKey, host: DNSName, port: u16) -> Self {
+    pub fn new(sk: SecretKey, host: HostName, port: u16) -> Self {
         Config {
             secret_key: sk,
             connect_timeout: default_connect_timeout(),
@@ -138,8 +137,7 @@ impl fmt::Debug for Config {
 #[non_exhaustive]
 pub struct Server {
     /// The hostname of the remote server.
-    #[serde(deserialize_with = "util::serde::decode_dns_name")]
-    pub host: DNSName,
+    pub host: HostName,
 
     /// The port to connect to (default = 443).
     #[serde(default = "default_port")]

@@ -4,16 +4,17 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-base64       = "0.13.0"
-humantime    = "2.1"
-futures      = "0.3.13"
-log          = { version = "0.1.25", package = "tracing" }
-minicbor     = { version = "0.11.0", features = ["derive", "std", "half"] }
-minicbor-io  = { version = "0.6.0", features = ["async-io"] }
-rand_core    = "0.6.2"
-sealed-boxes = { path = "../sealed-boxes" }
-serde        = { version = "1.0.125", features = ["derive"] }
-tokio-rustls = "0.22"
+base64         = "0.13.0"
+humantime      = "2.1"
+futures        = "0.3.13"
+log            = { version = "0.1.25", package = "tracing" }
+minicbor       = { version = "0.11.0", features = ["derive", "std", "half"] }
+minicbor-io    = { version = "0.6.0", features = ["async-io"] }
+rand_core      = "0.6.2"
+rustls-pemfile = "0.2.1"
+sealed-boxes   = { path = "../sealed-boxes" }
+serde          = { version = "1.0.125", features = ["derive"] }
+tokio-rustls   = "0.23"
 
 [dependencies.chacha20poly1305]
 version = "0.9"

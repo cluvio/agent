@@ -1,11 +1,11 @@
 use serde::de;
 use std::convert::TryFrom;
 use std::fmt;
-use tokio_rustls::webpki::{DNSName, DNSNameRef};
+use util::HostName;
 
 /// A pattern matching domain names.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct DnsPattern(Option<DNSName>);
+pub struct DnsPattern(Option<HostName>);
 
 impl DnsPattern {
     /// A pattern that matches every domain.
@@ -21,7 +21,7 @@ impl DnsPattern {
     pub fn matches(&self, domain: &str) -> bool {
         let ours: &str =
             if let Some(dns) = &self.0 {
-                dns.as_ref().into()
+                dns.as_str()
             } else {
                 return true
             };
@@ -47,7 +47,7 @@ impl DnsPattern {
     fn as_str(&self) -> &str {
         match &self.0 {
             None    => "",
-            Some(d) => d.as_ref().into()
+            Some(d) => d.as_str()
         }
     }
 }
@@ -60,8 +60,8 @@ impl TryFrom<&str> for DnsPattern {
             if rem.is_empty() {
                 return Ok(DnsPattern(None))
             }
-            if let Ok(dns) = DNSNameRef::try_from_ascii_str(rem) {
-                return Ok(DnsPattern(Some(dns.to_owned())))
+            if let Ok(name) = HostName::try_from(rem) {
+                return Ok(DnsPattern(Some(name)))
             }
         }
         Err(de::Error::custom("invalid DNS name pattern"))

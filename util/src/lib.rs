@@ -5,11 +5,13 @@ pub mod serde;
 pub mod time;
 
 use ::serde::de::{self, Deserialize, Deserializer};
-use ::serde::Serialize;
+use ::serde::{Serialize, Serializer};
+use std::borrow::Cow;
 use std::fmt;
 use std::convert::TryFrom;
 use std::ops::Deref;
 use std::str::FromStr;
+use tokio_rustls::rustls::ServerName;
 
 /// A non-empty vector.
 #[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize)]
@@ -113,5 +115,82 @@ impl<'a> FromStr for Location {
             "us" => Ok(Location::Us),
             _    => Err(InvalidLocation(s.into()))
         }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct HostName(ServerName);
+
+impl HostName {
+    pub fn as_str(&self) -> &str {
+        if let ServerName::DnsName(n) = &self.0 {
+            return n.as_ref()
+        }
+        unreachable!()
+    }
+
+    pub fn as_server_name(&self) -> &ServerName {
+        &self.0
+    }
+}
+
+impl PartialEq for HostName {
+    fn eq(&self, other: &Self) -> bool {
+        self.as_str().eq(other.as_str())
+    }
+}
+
+impl Eq for HostName {}
+
+impl fmt::Display for HostName {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if let ServerName::DnsName(n) = &self.0 {
+            return f.write_str(n.as_ref())
+        }
+        unreachable!()
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct InvalidHostName(String);
+
+impl fmt::Display for InvalidHostName {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "invalid hostname: {}", self.0)
+    }
+}
+
+impl std::error::Error for InvalidHostName {}
+
+impl<'a> FromStr for HostName {
+    type Err = InvalidHostName;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match ServerName::try_from(s) {
+            Ok(n@ServerName::DnsName(_)) => Ok(HostName(n)),
+            Ok(_)  => Err(InvalidHostName(format!("not a DNS name: `{}`", s))),
+            Err(e) => Err(InvalidHostName(format!("`{}`: {:?}", s, e)))
+        }
+    }
+}
+
+impl TryFrom<&str> for HostName {
+    type Error = InvalidHostName;
+
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
+        HostName::from_str(s)
+    }
+}
+
+impl<'de> Deserialize<'de> for HostName {
+    fn deserialize<D: Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        let s = <Cow<'de, str>>::deserialize(d)?;
+        HostName::try_from(&*s).map_err(de::Error::custom)
+    }
+}
+
+impl Serialize for HostName {
+    fn serialize<S: Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        self.as_str().serialize(s)
     }
 }
