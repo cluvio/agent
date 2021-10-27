@@ -39,6 +39,12 @@ fn main() -> Result<()> {
 
     match opts.command {
         Some(Command::Install { version, location, directory }) => {
+            let location =
+                if let Some(loc) = location {
+                    loc
+                } else {
+                    get_location(&mut console)?
+                };
             let directory =
                 if let Some(dir) = directory {
                     dir
@@ -64,8 +70,9 @@ fn main() -> Result<()> {
             })?;
             match &*answer {
                 "i" | "I" => {
+                    let location  = get_location(&mut console)?;
                     let directory = get_directory(&mut console, true)?;
-                    let mut installer = Installer::new(console, Location::Eu, directory, None);
+                    let mut installer = Installer::new(console, location, directory, None);
                     installer.install(&base_url).context("Installation failed.")?
                 }
                 "u" | "U" => {
@@ -110,3 +117,9 @@ fn map_dir(s: &str) -> PathBuf {
 fn map_dir(s: &str) -> PathBuf {
     Path::new(s).to_path_buf()
 }
+
+fn get_location(console: &mut Console) -> Result<Location> {
+    let loc = console.ask("In which location do you want to run the agent? [US/EU]: ")?.parse()?;
+    Ok(loc)
+}
+

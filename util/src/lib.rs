@@ -79,13 +79,15 @@ impl std::error::Error for Empty {}
 
 #[derive(Clone, Copy, Debug)]
 pub enum Location {
-    Eu
+    Eu,
+    Us
 }
 
 impl fmt::Display for Location {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Location::Eu => f.write_str("eu")
+            Location::Eu => f.write_str("eu"),
+            Location::Us => f.write_str("us")
         }
     }
 }
@@ -106,9 +108,10 @@ impl<'a> FromStr for Location {
     type Err = InvalidLocation;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "eu" | "EU" | "Eu" => Ok(Location::Eu),
-            _                  => Err(InvalidLocation(s.into()))
+        match s.to_lowercase().as_str() {
+            "eu" => Ok(Location::Eu),
+            "us" => Ok(Location::Us),
+            _    => Err(InvalidLocation(s.into()))
         }
     }
 }

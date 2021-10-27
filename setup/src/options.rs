@@ -28,8 +28,8 @@ pub enum Command {
         directory: Option<PathBuf>,
 
         /// The location this agent should use.
-        #[structopt(short, long, default_value = "eu")]
-        location: Location,
+        #[structopt(short, long)]
+        location: Option<Location>,
 
         /// Install a particular version.
         #[structopt(short, long)]
