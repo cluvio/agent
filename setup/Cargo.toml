@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 anyhow       = "1.0.43"
 bytes        = "1.0.1"
-crossterm    = "0.21.0"
+crossterm    = "0.22.1"
 dirs         = "4.0.0"
 indoc        = "1.0.3"
 log          = { version = "0.1.25", package = "tracing" }
