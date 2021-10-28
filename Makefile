@@ -15,6 +15,8 @@ SETUP_VERSION = 0.1.0
 	agent-version \
     setup-version
 
+.EXPORT_ALL_VARIABLES:
+
 agent-version:
 	@echo $(AGENT_VERSION)
 
@@ -59,13 +61,8 @@ build-agent-x86_64-apple-darwin: clean
 		--path agent
 	strip build/bin/agent
 	mv build/bin/agent build/cluvio-agent
-	scripts/apple-codesign.sh build/cluvio-agent \
-        $(MACOS_CERTIFICATE) \
-        $(MACOS_CERTIFICATE_PWD) \
-        $(MACOS_DEV_IDENTITY) \
-        $(APPLE_DEV_ACCOUNT) \
-        $(APPLE_DEV_PASSWORD) \
-        "cluvio-agent-$(AGENT_VERSION)" \
+	scripts/apple-codesign.sh build/cluvio-agent "cluvio-agent-$(AGENT_VERSION)"
+	scripts/apple-notarize.sh build/cluvio-agent "cluvio-agent-$(AGENT_VERSION)"
 	tar caf dist/agent-$(AGENT_VERSION)-x86_64-apple-darwin.tar.xz -C build/ cluvio-agent
 
 build-agent-aarch64-apple-darwin: export SDKROOT = $(shell xcrun -sdk macosx11.1 --show-sdk-path)
@@ -80,13 +77,8 @@ build-agent-aarch64-apple-darwin: clean
 		--path agent
 	strip build/bin/agent
 	mv build/bin/agent build/cluvio-agent
-	scripts/apple-codesign.sh build/cluvio-agent \
-        $(MACOS_CERTIFICATE) \
-        $(MACOS_CERTIFICATE_PWD) \
-        $(MACOS_DEV_IDENTITY) \
-        $(APPLE_DEV_ACCOUNT) \
-        $(APPLE_DEV_PASSWORD) \
-        "cluvio-agent-$(AGENT_VERSION)" \
+	scripts/apple-codesign.sh build/cluvio-agent "cluvio-agent-$(AGENT_VERSION)"
+	scripts/apple-notarize.sh build/cluvio-agent "cluvio-agent-$(AGENT_VERSION)"
 	tar caf dist/agent-$(AGENT_VERSION)-aarch64-apple-darwin.tar.xz -C build/ cluvio-agent
 
 build-agent-x86_64-pc-windows-msvc: clean
@@ -141,13 +133,8 @@ build-setup-x86_64-apple-darwin: clean
 		--path setup
 	strip build/bin/setup
 	mv build/bin/setup dist/cluvio-setup
-	scripts/apple-codesign.sh dist/cluvio-setup \
-        $(MACOS_CERTIFICATE) \
-        $(MACOS_CERTIFICATE_PWD) \
-        $(MACOS_DEV_IDENTITY) \
-        $(APPLE_DEV_ACCOUNT) \
-        $(APPLE_DEV_PASSWORD) \
-        "cluvio-setup-$(SETUP_VERSION)"
+	scripts/apple-codesign.sh dist/cluvio-setup "cluvio-setup-$(SETUP_VERSION)"
+	scripts/apple-notarize.sh dist/cluvio-setup "cluvio-setup-$(SETUP_VERSION)"
 
 # This export can be removed after https://github.com/alexcrichton/xz2-rs/pull/85.
 build-setup-aarch64-apple-darwin: export LZMA_API_STATIC = 1
@@ -163,13 +150,8 @@ build-setup-aarch64-apple-darwin: clean
 		--path setup
 	strip build/bin/setup
 	mv build/bin/setup dist/cluvio-setup
-	scripts/apple-codesign.sh dist/cluvio-setup \
-        $(MACOS_CERTIFICATE) \
-        $(MACOS_CERTIFICATE_PWD) \
-        $(MACOS_DEV_IDENTITY) \
-        $(APPLE_DEV_ACCOUNT) \
-        $(APPLE_DEV_PASSWORD) \
-        "cluvio-setup-$(SETUP_VERSION)"
+	scripts/apple-codesign.sh dist/cluvio-setup "cluvio-setup-$(SETUP_VERSION)"
+	scripts/apple-notarize.sh dist/cluvio-setup "cluvio-setup-$(SETUP_VERSION)"
 
 # This export can be removed after https://github.com/alexcrichton/xz2-rs/pull/85.
 build-setup-x86_64-pc-windows-msvc: export LZMA_API_STATIC = 1
