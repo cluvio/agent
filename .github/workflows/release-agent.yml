@@ -115,7 +115,7 @@ jobs:
 
     - uses: actions/upload-artifact@v2
       with:
-        name: agent-${{ env.AGENT_VERSION }}-aarch64-apple-darwin.dmg
+        path: agent-${{ env.AGENT_VERSION }}-aarch64-apple-darwin.dmg
         retention-days: 1
 
   build-x86_64-pc-windows-msvc:
