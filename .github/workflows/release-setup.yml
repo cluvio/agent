@@ -67,6 +67,9 @@ jobs:
         MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
         MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
         MACOS_DEV_IDENTITY: ${{ secrets.MACOS_DEV_IDENTITY }}
+        APPLE_DEV_ACCOUNT: ${{ secrets.APPLE_DEV_ACCOUNT }}
+        APPLE_DEV_PASSWORD: ${{ secrets.APPLE_DEV_PASSWORD }}
+        APP_NAME: ${{ secrets.APP_NAME }}
 
     - run: echo SETUP_VERSION=$(make setup-version) >> $GITHUB_ENV
 
@@ -91,6 +94,9 @@ jobs:
         MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
         MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
         MACOS_DEV_IDENTITY: ${{ secrets.MACOS_DEV_IDENTITY }}
+        APPLE_DEV_ACCOUNT: ${{ secrets.APPLE_DEV_ACCOUNT }}
+        APPLE_DEV_PASSWORD: ${{ secrets.APPLE_DEV_PASSWORD }}
+        APP_NAME: ${{ secrets.APP_NAME }}
 
     - run: echo SETUP_VERSION=$(make setup-version) >> $GITHUB_ENV
 

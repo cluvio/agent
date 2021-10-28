@@ -62,7 +62,10 @@ build-agent-x86_64-apple-darwin: clean
 	scripts/apple-codesign.sh build/cluvio-agent \
         $(MACOS_CERTIFICATE) \
         $(MACOS_CERTIFICATE_PWD) \
-        $(MACOS_DEV_IDENTITY)
+        $(MACOS_DEV_IDENTITY) \
+        $(APPLE_DEV_ACCOUNT) \
+        $(APPLE_DEV_PASSWORD) \
+        $(APP_NAME) \
 	tar caf dist/agent-$(AGENT_VERSION)-x86_64-apple-darwin.tar.xz -C build/ cluvio-agent
 
 build-agent-aarch64-apple-darwin: export SDKROOT = $(shell xcrun -sdk macosx11.1 --show-sdk-path)
@@ -80,7 +83,10 @@ build-agent-aarch64-apple-darwin: clean
 	scripts/apple-codesign.sh build/cluvio-agent \
         $(MACOS_CERTIFICATE) \
         $(MACOS_CERTIFICATE_PWD) \
-        $(MACOS_DEV_IDENTITY)
+        $(MACOS_DEV_IDENTITY) \
+        $(APPLE_DEV_ACCOUNT) \
+        $(APPLE_DEV_PASSWORD) \
+        $(APP_NAME) \
 	tar caf dist/agent-$(AGENT_VERSION)-aarch64-apple-darwin.tar.xz -C build/ cluvio-agent
 
 build-agent-x86_64-pc-windows-msvc: clean
@@ -138,7 +144,10 @@ build-setup-x86_64-apple-darwin: clean
 	scripts/apple-codesign.sh build/cluvio-setup \
         $(MACOS_CERTIFICATE) \
         $(MACOS_CERTIFICATE_PWD) \
-        $(MACOS_DEV_IDENTITY)
+        $(MACOS_DEV_IDENTITY) \
+        $(APPLE_DEV_ACCOUNT) \
+        $(APPLE_DEV_PASSWORD) \
+        $(APP_NAME)
 
 # This export can be removed after https://github.com/alexcrichton/xz2-rs/pull/85.
 build-setup-aarch64-apple-darwin: export LZMA_API_STATIC = 1
@@ -157,7 +166,10 @@ build-setup-aarch64-apple-darwin: clean
 	scripts/apple-codesign.sh build/cluvio-setup \
         $(MACOS_CERTIFICATE) \
         $(MACOS_CERTIFICATE_PWD) \
-        $(MACOS_DEV_IDENTITY)
+        $(MACOS_DEV_IDENTITY) \
+        $(APPLE_DEV_ACCOUNT) \
+        $(APPLE_DEV_PASSWORD) \
+        $(APP_NAME)
 
 # This export can be removed after https://github.com/alexcrichton/xz2-rs/pull/85.
 build-setup-x86_64-pc-windows-msvc: export LZMA_API_STATIC = 1
