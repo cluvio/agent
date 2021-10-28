@@ -123,6 +123,8 @@ build-setup-aarch64-unknown-linux-musl: clean
 	aarch64-linux-gnu-strip build/bin/setup
 	mv build/bin/setup dist/cluvio-setup
 
+# This export can be removed after https://github.com/alexcrichton/xz2-rs/pull/85.
+build-setup-x86_64-apple-darwin: export LZMA_API_STATIC = 1
 build-setup-x86_64-apple-darwin: clean
 	mkdir -p build dist
 	cargo install \
@@ -138,6 +140,8 @@ build-setup-x86_64-apple-darwin: clean
         $(MACOS_CERTIFICATE_PWD) \
         $(MACOS_DEV_IDENTITY)
 
+# This export can be removed after https://github.com/alexcrichton/xz2-rs/pull/85.
+build-setup-aarch64-apple-darwin: export LZMA_API_STATIC = 1
 build-setup-aarch64-apple-darwin: export SDKROOT = $(shell xcrun -sdk macosx11.1 --show-sdk-path)
 build-setup-aarch64-apple-darwin: export MACOSX_DEPLOYMENT_TARGET = $(shell xcrun -sdk macosx11.1 --show-sdk-platform-version)
 build-setup-aarch64-apple-darwin: clean
@@ -155,6 +159,8 @@ build-setup-aarch64-apple-darwin: clean
         $(MACOS_CERTIFICATE_PWD) \
         $(MACOS_DEV_IDENTITY)
 
+# This export can be removed after https://github.com/alexcrichton/xz2-rs/pull/85.
+build-setup-x86_64-pc-windows-msvc: export LZMA_API_STATIC = 1
 build-setup-x86_64-pc-windows-msvc: clean
 	mkdir -p build dist
 	cargo install \
