@@ -85,7 +85,7 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         name: agent-${{ env.AGENT_VERSION }}-x86_64-apple-darwin.dmg
-        path: "cluvio-agent-${{ env.AGENT_VERSION }}.dmg"
+        path: "dist/cluvio-agent.dmg"
         retention-days: 1
 
   build-aarch64-apple-darwin:
@@ -117,7 +117,7 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         name: agent-${{ env.AGENT_VERSION }}-aarch64-apple-darwin.dmg
-        path: "cluvio-agent-${{ env.AGENT_VERSION }}.dmg"
+        path: "dist/cluvio-agent.dmg"
         retention-days: 1
 
   build-x86_64-pc-windows-msvc:

@@ -3,12 +3,13 @@
 set -e
 
 executable="$1"
-app_name="$2"
 
-if [ -z "$executable" -o -z "$app_name" ]; then
-    echo "usage: $0 <executable> <app_name>"
+if [ -z "$executable" ]; then
+    echo "usage: $0 <executable>"
     exit 1
 fi
+
+name="$(basename $executable)"
 
 if [ -z "$APPLE_DEV_ACCOUNT" ]; then
     echo 'Missing $APPLE_DEV_ACCOUNT'
@@ -23,8 +24,8 @@ fi
 xcrun altool --notarize-app \
     --username "$APPLE_DEV_ACCOUNT" \
     --password "$APPLE_DEV_PASSWORD" \
-    --file "$app_name".dmg \
-    --primary-bundle-id "com.cluvio.$(basename executable)" | tee output
+    --file "${executable}.dmg" \
+    --primary-bundle-id "com.cluvio.$name" | tee output
 
 uuid=$(grep RequestUUID output | awk '{print $3}')
 
@@ -44,7 +45,7 @@ for i in $(seq 1 60); do
             exit 1
             ;;
         "success")
-            xcrun stapler staple "$app_name".dmg
+            xcrun stapler staple "${executable}.dmg"
             exit 0
             ;;
         *)

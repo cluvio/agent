@@ -3,12 +3,13 @@
 set -e
 
 executable="$1"
-app_name="$2"
 
-if [ -z "$executable" -o -z "$app_name" ]; then
-    echo "usage: $0 <executable> <app_name>"
+if [ -z "$executable" ]; then
+    echo "usage: $0 <executable>"
     exit 1
 fi
+
+name="$(basename $executable)"
 
 if [ -z "$MACOS_CERTIFICATE" ]; then
     echo 'Missing $MACOS_CERTIFICATE'
@@ -38,12 +39,12 @@ security find-identity
 # Codesign the executable with hardened runtime (--options runtime)
 /usr/bin/codesign --force --options runtime -s "$MACOS_DEV_IDENTITY" "$executable" -v
 
-mkdir image-bundle
-cp "$executable" image-bundle
-
 # Create disk image
-hdiutil create -volname "$app_name" -srcfolder image-bundle -ov -format UDZO "$app_name".dmg
+srcdir=$(mktemp -t tmp.XXXXXXXXXX)
+cp "$executable" "$srcdir"
+hdiutil create -volname "$name" -srcfolder "$srcdir" -ov -format UDZO "${executable}.dmg"
 
 # Codesign the disk image
-/usr/bin/codesign --force --options runtime -s "$MACOS_DEV_IDENTITY" "$app_name".dmg -v
+/usr/bin/codesign --force --options runtime -s "$MACOS_DEV_IDENTITY" "${executable}.dmg" -v
 
+rm -rf "$srcdir"

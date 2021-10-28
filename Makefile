@@ -61,8 +61,8 @@ build-agent-x86_64-apple-darwin: clean
 		--path agent
 	strip build/bin/agent
 	mv build/bin/agent build/cluvio-agent
-	scripts/apple-codesign.sh build/cluvio-agent "cluvio-agent-$(AGENT_VERSION)"
-	scripts/apple-notarize.sh build/cluvio-agent "cluvio-agent-$(AGENT_VERSION)"
+	scripts/apple-codesign.sh build/cluvio-agent
+	scripts/apple-notarize.sh build/cluvio-agent
 	tar caf dist/agent-$(AGENT_VERSION)-x86_64-apple-darwin.tar.xz -C build/ cluvio-agent
 
 build-agent-aarch64-apple-darwin: export SDKROOT = $(shell xcrun -sdk macosx11.1 --show-sdk-path)
@@ -77,8 +77,8 @@ build-agent-aarch64-apple-darwin: clean
 		--path agent
 	strip build/bin/agent
 	mv build/bin/agent build/cluvio-agent
-	scripts/apple-codesign.sh build/cluvio-agent "cluvio-agent-$(AGENT_VERSION)"
-	scripts/apple-notarize.sh build/cluvio-agent "cluvio-agent-$(AGENT_VERSION)"
+	scripts/apple-codesign.sh build/cluvio-agent
+	scripts/apple-notarize.sh build/cluvio-agent
 	tar caf dist/agent-$(AGENT_VERSION)-aarch64-apple-darwin.tar.xz -C build/ cluvio-agent
 
 build-agent-x86_64-pc-windows-msvc: clean
@@ -133,8 +133,8 @@ build-setup-x86_64-apple-darwin: clean
 		--path setup
 	strip build/bin/setup
 	mv build/bin/setup dist/cluvio-setup
-	scripts/apple-codesign.sh dist/cluvio-setup "cluvio-setup-$(SETUP_VERSION)"
-	scripts/apple-notarize.sh dist/cluvio-setup "cluvio-setup-$(SETUP_VERSION)"
+	scripts/apple-codesign.sh dist/cluvio-setup
+	scripts/apple-notarize.sh dist/cluvio-setup
 
 # This export can be removed after https://github.com/alexcrichton/xz2-rs/pull/85.
 build-setup-aarch64-apple-darwin: export LZMA_API_STATIC = 1
@@ -150,8 +150,8 @@ build-setup-aarch64-apple-darwin: clean
 		--path setup
 	strip build/bin/setup
 	mv build/bin/setup dist/cluvio-setup
-	scripts/apple-codesign.sh dist/cluvio-setup "cluvio-setup-$(SETUP_VERSION)"
-	scripts/apple-notarize.sh dist/cluvio-setup "cluvio-setup-$(SETUP_VERSION)"
+	scripts/apple-codesign.sh dist/cluvio-setup
+	scripts/apple-notarize.sh dist/cluvio-setup
 
 # This export can be removed after https://github.com/alexcrichton/xz2-rs/pull/85.
 build-setup-x86_64-pc-windows-msvc: export LZMA_API_STATIC = 1
