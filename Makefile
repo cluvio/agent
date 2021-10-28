@@ -141,7 +141,7 @@ build-setup-x86_64-apple-darwin: clean
 		--path setup
 	strip build/bin/setup
 	mv build/bin/setup dist/cluvio-setup
-	scripts/apple-codesign.sh build/cluvio-setup \
+	scripts/apple-codesign.sh dist/cluvio-setup \
         $(MACOS_CERTIFICATE) \
         $(MACOS_CERTIFICATE_PWD) \
         $(MACOS_DEV_IDENTITY) \
@@ -163,7 +163,7 @@ build-setup-aarch64-apple-darwin: clean
 		--path setup
 	strip build/bin/setup
 	mv build/bin/setup dist/cluvio-setup
-	scripts/apple-codesign.sh build/cluvio-setup \
+	scripts/apple-codesign.sh dist/cluvio-setup \
         $(MACOS_CERTIFICATE) \
         $(MACOS_CERTIFICATE_PWD) \
         $(MACOS_DEV_IDENTITY) \
