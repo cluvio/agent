@@ -40,7 +40,7 @@ security find-identity
 /usr/bin/codesign --force --options runtime -s "$MACOS_DEV_IDENTITY" "$executable" -v
 
 # Create disk image
-srcdir=$(mktemp -t tmp.XXXXXXXXXX)
+srcdir=$(mktemp -d -t tmp.XXXXXXXXXX)
 cp "$executable" "$srcdir"
 hdiutil create -volname "$name" -srcfolder "$srcdir" -ov -format UDZO "${executable}.dmg"
 
