@@ -3,13 +3,13 @@
 set -e
 
 executable="$1"
+dmg_name="$2"
+name="$(basename $executable)"
 
-if [ -z "$executable" ]; then
-    echo "usage: $0 <executable>"
+if [ -z "$executable" -o -z "$dmg_name" ]; then
+    echo "usage: $0 <executable> <dmg-name>"
     exit 1
 fi
-
-name="$(basename $executable)"
 
 if [ -z "$MACOS_CERTIFICATE" ]; then
     echo 'Missing $MACOS_CERTIFICATE'
@@ -42,9 +42,9 @@ security find-identity
 # Create disk image
 srcdir=$(mktemp -d -t tmp.XXXXXXXXXX)
 cp "$executable" "$srcdir"
-hdiutil create -volname "$name" -srcfolder "$srcdir" -ov -format UDZO "${executable}.dmg"
+hdiutil create -volname "$name" -srcfolder "$srcdir" -ov -format UDZO "${dmg_name}.dmg"
 
 # Codesign the disk image
-/usr/bin/codesign --force --options runtime -s "$MACOS_DEV_IDENTITY" "${executable}.dmg" -v
+/usr/bin/codesign --force --options runtime -s "$MACOS_DEV_IDENTITY" "${dmg_name}.dmg" -v
 
 rm -rf "$srcdir"
