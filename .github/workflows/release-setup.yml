@@ -63,6 +63,10 @@ jobs:
 
     - name: Package setup.
       run: make build-setup-x86_64-apple-darwin
+      env:
+        MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+        MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+        MACOS_DEV_IDENTITY: ${{ secrets.MACOS_DEV_IDENTITY }}
 
     - run: echo SETUP_VERSION=$(make setup-version) >> $GITHUB_ENV
 
@@ -83,6 +87,10 @@ jobs:
 
     - name: Package setup.
       run: make build-setup-aarch64-apple-darwin
+      env:
+        MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+        MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+        MACOS_DEV_IDENTITY: ${{ secrets.MACOS_DEV_IDENTITY }}
 
     - run: echo SETUP_VERSION=$(make setup-version) >> $GITHUB_ENV
 
