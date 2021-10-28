@@ -24,7 +24,7 @@ xcrun altool --notarize-app \
     --username "$APPLE_DEV_ACCOUNT" \
     --password "$APPLE_DEV_PASSWORD" \
     --file "$app_name".dmg \
-    --primary-bundle-id "com.cluvio.$(basename executable)" \
+    --primary-bundle-id "com.cluvio.$(basename executable)" | tee output
 
 uuid=$(grep RequestUUID output | awk '{print $3}')
 
