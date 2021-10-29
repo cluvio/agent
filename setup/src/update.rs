@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Context, Result};
 use crate::console::Console;
-use crate::constants::ARCHIVE_TEMPLATE;
+use crate::constants::{AGENT, ARCHIVE_TEMPLATE};
 use crate::download::{download, latest_version};
 use crate::install::{self, CONFIG_FILE};
 use crossterm::style::Stylize;
@@ -100,7 +100,7 @@ impl Updater {
 
     fn installed_version(&mut self) -> Result<Version> {
         let section = self.console.begin("Checking installed version ...")?;
-        let path = self.directory.join("cluvio-agent");
+        let path = self.directory.join(AGENT);
         let out = Command::new(&path)
             .arg("--version")
             .output()

@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Context, Result};
 use crate::config::create_config;
 use crate::console::Console;
-use crate::constants::ARCHIVE_TEMPLATE;
+use crate::constants::{AGENT, ARCHIVE_TEMPLATE};
 use crate::download::{download, latest_version};
 use crate::util::{create_dir, Outcome};
 use crossterm::style::Stylize;
@@ -92,7 +92,7 @@ impl Installer {
             \n",
             done = "Installation complete.\n\n".green().bold(),
             key = base64::encode(&pubkey).bold().yellow().on_black(),
-            agent  = self.directory.join("cluvio-agent").to_string_lossy().bold(),
+            agent  = self.directory.join(AGENT).to_string_lossy().bold(),
             config = self.directory.join(CONFIG_FILE).to_string_lossy().bold()
         })?;
 
@@ -100,6 +100,7 @@ impl Installer {
     }
 }
 
+#[cfg(not(target_os = "macos"))]
 pub fn extract(temp: &Path, archive: &Path, dir: &Path) -> Result<()> {
     if Some("xz") != archive.extension().and_then(OsStr::to_str) {
         return Err(anyhow!("Archive {:?} has no .xz file extension", archive))
@@ -120,3 +121,11 @@ pub fn extract(temp: &Path, archive: &Path, dir: &Path) -> Result<()> {
     Ok(())
 }
 
+#[cfg(target_os = "macos")]
+pub fn extract(temp: &Path, archive: &Path, dir: &Path) -> Result<()> {
+    if Some("dmg") != archive.extension().and_then(OsStr::to_str) {
+        return Err(anyhow!("Archive {:?} has no .dmg file extension", archive))
+    }
+    crate::dmg::extract(temp.join(archive).as_path(), dir)?;
+    Ok(())
+}
