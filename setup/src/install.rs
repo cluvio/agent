@@ -1,5 +1,5 @@
 use anyhow::{anyhow, Context, Result};
-use crate::config::{create_config, CONFIG_FILE};
+use crate::config::create_config;
 use crate::console::Console;
 use crate::constants::ARCHIVE_TEMPLATE;
 use crate::download::{download, latest_version};
@@ -14,6 +14,8 @@ use std::fs::File;
 use std::path::{Path, PathBuf};
 use tempfile::tempdir;
 use util::{base64, Location};
+
+pub(crate) const CONFIG_FILE: &str = "cluvio-agent.toml";
 
 #[derive(Debug)]
 pub struct Installer {
@@ -73,7 +75,10 @@ impl Installer {
             "Creating config file \"{}\" ...",
             self.directory.join(CONFIG_FILE).to_string_lossy().bold()
         })?;
-        let pubkey = create_config(&self.directory, self.location).context("Failed to create config file.")?;
+
+        let pubkey = create_config(self.directory.join(CONFIG_FILE), self.location)
+            .context("Failed to create config file.")?;
+
         section.end()?;
 
         self.console.print(formatdoc! {

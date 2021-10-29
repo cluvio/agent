@@ -45,6 +45,17 @@ pub enum Command {
         /// Install a particular version.
         #[structopt(short, long)]
         version: Option<Version>
+    },
+
+    /// Generate a new configuration file.
+    Config {
+        /// File path to write the configuration to.
+        #[structopt(short, long)]
+        output: PathBuf,
+
+        /// The location this agent should use.
+        #[structopt(short, long)]
+        location: Option<Location>
     }
 }
 

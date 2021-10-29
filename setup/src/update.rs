@@ -1,9 +1,8 @@
 use anyhow::{anyhow, Context, Result};
-use crate::config::CONFIG_FILE;
 use crate::console::Console;
 use crate::constants::ARCHIVE_TEMPLATE;
 use crate::download::{download, latest_version};
-use crate::install;
+use crate::install::{self, CONFIG_FILE};
 use crossterm::style::Stylize;
 use reqwest::Url;
 use semver::Version;

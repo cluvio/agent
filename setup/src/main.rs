@@ -64,6 +64,15 @@ fn main() -> Result<()> {
             let mut updater = Updater::new(console, directory, version);
             updater.update(&base_url).context("Update failed.")?
         }
+        Some(Command::Config { output, location }) => {
+            let location =
+                if let Some(loc) = location {
+                    loc
+                } else {
+                    get_location(&mut console)?
+                };
+            config::create_config(&output, location)?;
+        }
         None => {
             let answer = console.ask(indoc! {
                 "Would you like to install [i] a new agent or update [u] an existing installation? [i/u]: "
