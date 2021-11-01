@@ -1,12 +1,14 @@
 mod config;
 mod console;
 mod constants;
-mod dmg;
 mod download;
 mod install;
 mod options;
 mod update;
 mod util;
+
+#[cfg(target_os = "macos")]
+mod dmg;
 
 use anyhow::{anyhow, Context, Result};
 use indoc::indoc;
