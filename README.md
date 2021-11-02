@@ -25,7 +25,7 @@ agent-key = "HfHljrdm_Lrof1k6bvtMFgC7hdH5R64PmyCsNFTvE28"
 secret-key = "PKDdhZR-PlJJy2wKiCVeiw993rtZlLFmswyxbZGzw4g"
 
 [server]
-host = "gateway-eu.cluvio.com"⏎
+host = "gateway.eu.cluvio.com"⏎
 ```
 
 For testing against staging, the `host` value in the `[server]` section needs
