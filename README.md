@@ -55,9 +55,7 @@ ZXADQQAyWF29mcwXP0Jbyk/0I5RL8OMgsFTXVg3/J1z6oPQnUtQLePKoHr/3K802
 '''
 ```
 
-The `value` corresponds to the self-signed certificate the gateway uses,
-e.g. the included `gateway/etc/certs/cert.pem` one.
-
+`trust` corresponds to the self-signed certificate the gateway uses.
 Given a config file, the agent can be run with
 
 ```
