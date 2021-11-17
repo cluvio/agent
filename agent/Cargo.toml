@@ -27,7 +27,7 @@ webpki-roots = "0.22"
 yamux        = "0.9.0"
 
 [dependencies.tokio]
-version = "1.10"
+version = "1.14"
 default-features = false
 features = ["io-util", "macros", "net", "rt-multi-thread", "time", "sync"]
 
