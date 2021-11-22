@@ -33,7 +33,7 @@ features = ["io-util", "macros", "net", "rt-multi-thread", "time", "sync"]
 
 [dependencies.tracing-subscriber]
 version  = "0.3.1"
-features = ["env-filter", "json", "time"]
+features = ["env-filter", "json"]
 
 [dev-dependencies]
 quickcheck = "1.0.3"

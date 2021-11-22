@@ -12,7 +12,6 @@ async fn main() {
     }
 
     let subscriber = tracing_subscriber::fmt()
-        .with_timer(tracing_subscriber::fmt::time::UtcTime::rfc_3339())
         .with_env_filter(opts.log.unwrap_or_else(|| "agent=info".to_string()));
 
     if opts.json {
