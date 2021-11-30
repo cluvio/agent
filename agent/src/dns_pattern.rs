@@ -134,8 +134,6 @@ mod tests {
     #[test]
     fn matches_domain_with_pattern_as_suffix() {
         fn prop(dns: DnsPattern, prefix: Vec<Ascii>) -> TestResult {
-            if prefix.len() > 63 {
-            }
             let mut domain = join(&prefix);
             domain.push_str(".");
             domain.push_str(dns.as_str());
@@ -147,7 +145,7 @@ mod tests {
     #[test]
     fn prefix_needs_to_finish_with_dot() {
         fn prop(dns: DnsPattern, prefix: Vec<Ascii>) -> TestResult {
-            if prefix.is_empty() || prefix.len() > 63 {
+            if prefix.is_empty() {
                 return TestResult::discard()
             }
             let mut domain = join(&prefix);
@@ -171,10 +169,10 @@ mod tests {
     }
 
     fn join(parts: &[Ascii]) -> String {
-        let mut result = String::new();
-        for p in parts {
-            result.push_str(&p.0);
-        }
-        result
+        parts.iter()
+            .map(|a| a.0.as_str())
+            .filter(|s| !s.is_empty())
+            .collect::<Vec<_>>()
+            .join(".")
     }
 }
