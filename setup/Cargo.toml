@@ -23,6 +23,6 @@ walkdir      = "2.3.2"
 xz2          = "0.1.6"
 
 [dependencies.tracing-subscriber]
-version  = "0.3.1"
+version  = "0.3.3"
 features = ["env-filter"]
 
