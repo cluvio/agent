@@ -137,8 +137,8 @@ jobs:
 
     - uses: actions/upload-artifact@v2
       with:
-        name: agent-${{ env.AGENT_VERSION }}-x86_64-pc-windows-msvc.tar.xz
-        path: "dist/agent-${{ env.AGENT_VERSION }}-x86_64-pc-windows-msvc.tar.xz"
+        name: agent-${{ env.AGENT_VERSION }}-x86_64-pc-windows-msvc.zip
+        path: "dist/agent-${{ env.AGENT_VERSION }}-x86_64-pc-windows-msvc.zip"
         retention-days: 1
 
   release:
@@ -187,7 +187,7 @@ jobs:
 
     - uses: actions/download-artifact@v2
       with:
-        name: agent-${{ env.AGENT_VERSION }}-x86_64-pc-windows-msvc.tar.xz
+        name: agent-${{ env.AGENT_VERSION }}-x86_64-pc-windows-msvc.zip
         path: dist/
 
     - name: Create release.
