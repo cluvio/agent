@@ -81,7 +81,7 @@ build-agent-x86_64-pc-windows-msvc: clean
 		--path agent
 	strip build/bin/agent.exe
 	mv build/bin/agent.exe build/cluvio-agent.exe
-	(cd build && zip a ../dist/agent-$(AGENT_VERSION)-x86_64-pc-windows-msvc.zip cluvio-agent.exe)
+	(cd build && 7z.exe a ../dist/agent-$(AGENT_VERSION)-x86_64-pc-windows-msvc.zip cluvio-agent.exe)
 
 clean:
 	rm -rf build/ dist/
