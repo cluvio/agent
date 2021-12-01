@@ -1,5 +1,5 @@
 [workspace]
-members = ["agent", "protocol", "sealed-boxes", "setup", "util"]
+members = ["agent", "protocol", "sealed-boxes", "util"]
 
 [profile.release]
 codegen-units = 1
