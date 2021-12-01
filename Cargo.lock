@@ -13,38 +13,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "agent"
-version = "0.1.0"
-dependencies = [
- "config",
- "directories",
- "either",
- "futures",
- "humantime",
- "ipnet",
- "minicbor",
- "minicbor-io",
- "protocol",
- "quickcheck",
- "rand",
- "scopeguard",
- "sealed-boxes",
- "serde",
- "socket2",
- "structopt",
- "thiserror",
- "tokio",
- "tokio-rustls",
- "tokio-util",
- "toml",
- "tracing",
- "tracing-subscriber",
- "util",
- "webpki-roots",
- "yamux",
-]
-
-[[package]]
 name = "aho-corasick"
 version = "0.7.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -197,6 +165,38 @@ dependencies = [
  "textwrap",
  "unicode-width",
  "vec_map",
+]
+
+[[package]]
+name = "cluvio-agent"
+version = "0.1.0"
+dependencies = [
+ "config",
+ "directories",
+ "either",
+ "futures",
+ "humantime",
+ "ipnet",
+ "minicbor",
+ "minicbor-io",
+ "protocol",
+ "quickcheck",
+ "rand",
+ "scopeguard",
+ "sealed-boxes",
+ "serde",
+ "socket2",
+ "structopt",
+ "thiserror",
+ "tokio",
+ "tokio-rustls",
+ "tokio-util",
+ "toml",
+ "tracing",
+ "tracing-subscriber",
+ "util",
+ "webpki-roots",
+ "yamux",
 ]
 
 [[package]]

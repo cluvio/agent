@@ -1,8 +1,9 @@
 [package]
-name    = "agent"
-version = "0.1.0"
-license = "MIT"
-edition = "2021"
+name        = "cluvio-agent"
+version     = "0.1.0"
+license     = "MIT"
+edition     = "2021"
+description = "Cluvio GmbH connection agent"
 
 [dependencies]
 config       = { version = "0.11", default-features = false, features = ["toml"] }
@@ -40,3 +41,12 @@ features = ["env-filter", "json"]
 [dev-dependencies]
 quickcheck = "1.0.3"
 rand       = "0.8.4"
+
+[package.metadata.deb]
+copyright          = "2021, Cluvio GmbH"
+maintainer         = "Cluvio GmbH <admin@cluvio.com>"
+maintainer-scripts = "../scripts/linux"
+
+[package.metadata.deb.systemd-units]
+start = false
+stop-on-upgrade = false

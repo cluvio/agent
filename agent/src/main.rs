@@ -1,4 +1,4 @@
-use agent::{self, Agent, Config, Options};
+use cluvio_agent::{self, Agent, Config, Options};
 use directories::BaseDirs;
 use std::env;
 use std::path::{Path, PathBuf};
@@ -12,7 +12,7 @@ async fn main() {
     let opts = Options::from_args();
 
     if opts.version {
-        println!("{}", agent::version().unwrap_or_else(exit("version")));
+        println!("{}", cluvio_agent::version().unwrap_or_else(exit("version")));
         return
     }
 
