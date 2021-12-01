@@ -15,13 +15,13 @@ has authenticated itself to the agent.
 ## Authentication
 
 An agent uses a single keypair for authentication purposes. The secret key is stored in
-its configutation file and does not leave the system for authentication. The public key
+its configuration file and does not leave the system for authentication. The public key
 is registered with Cluvio and is used for agent identification as well as for authentication.
 
 The authentication protocol is based on a challenge-response approach. When an agent has
 established the TLS connection to the server, the latter generates a random nonce and
 encrypts it against the agent's public key. The agent is expected to send back the decrypted
-value to the server within some time to prove the possession of the corresponding private key.
+value to the server to prove the possession of the corresponding private key.
 If the agent fails to do so, the connection is terminated by the server. The nonce encryption
 uses the "sealed boxes" encryption scheme used by libsodium, i.e the ciphertext has this
 format:
@@ -42,7 +42,7 @@ where
 
 ## Authorisation
 
-Once authenticated the Cluvio server checks that the agent has acutally been registered with the
+After successful authentication of the agent, the Cluvio server checks that the agent has actually been registered with the
 system. If not, the connection is terminated, otherwise the connection is fully established and
 application protocol traffic is allowed.
 
@@ -50,7 +50,7 @@ application protocol traffic is allowed.
 
 The Cluvio Server instructs the agent to open a connection to upstream systems, bidirectionally
 forwarding traffic from upstream to Cluvio. The agent can be configured to whitelist addresses
-which it considers valid. The configuration file may contain a list of addresses in the
+which it considers valid. For that purpose, the configuration file may contain a list of addresses in the
 `allowed_addresses` key. The format of each address can be an IP network in CIDR notation in which
 case any upstream IP address must lie within this network, a DNS name or a DNS pattern which is
 matched according to https://datatracker.ietf.org/doc/html/rfc6265#section-5.1.3. Should the
