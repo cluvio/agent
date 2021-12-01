@@ -1,6 +1,6 @@
 use agent::{self, Agent, Config, Options};
 use structopt::StructOpt;
-use util::exit;
+use util::{base64, exit};
 
 #[tokio::main]
 async fn main() {
@@ -20,6 +20,11 @@ async fn main() {
         subscriber.init();
     }
 
+    if opts.gen_keypair {
+        print_keypair();
+        return
+    }
+
     let cfg: Config = {
         let path = opts.config
             .ok_or_else(|| "missing config path".to_string())
@@ -36,5 +41,13 @@ async fn main() {
         .await;
 
     exit("agent was terminated by gateway")(reason)
+}
+
+/// Print a newly generated keypair to stdout.
+fn print_keypair() {
+    let s = sealed_boxes::gen_secret_key();
+    let p = base64::encode(s.public_key().as_bytes());
+    let s = base64::encode(s.to_bytes());
+    println!("public-key: {}\nsecret-key: {}", p, s)
 }
 

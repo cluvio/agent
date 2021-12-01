@@ -20,7 +20,7 @@ pub use ipnet::{IpNet, Ipv4Net, Ipv6Net};
 #[structopt(name = "cluvio-agent")]
 pub struct Options {
     /// Path to configuration file.
-    #[structopt(short, long, parse(from_os_str), required_unless_one(&["gen-keypair", "setup", "version"]))]
+    #[structopt(short, long, parse(from_os_str), required_unless_one(&["gen-keypair", "version"]))]
     pub config: Option<PathBuf>,
 
     /// Show version information.
@@ -33,7 +33,11 @@ pub struct Options {
 
     /// Use json format for log messages.
     #[structopt(short, long)]
-    pub json: bool
+    pub json: bool,
+
+    /// Generate a new keypair.
+    #[structopt(short, long)]
+    pub gen_keypair: bool
 }
 
 /// Config file representation.
