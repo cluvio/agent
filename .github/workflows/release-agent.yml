@@ -20,15 +20,24 @@ jobs:
     - name: Install MUSL target
       run: rustup target add x86_64-unknown-linux-musl
 
+    - name: Install cargo-deb
+      run: cargo install cargo-deb
+
     - name: Package agent.
-      run: make build-agent-x86_64-unknown-linux-musl
+      run: make deb-agent-x86_64-unknown-linux-musl
 
     - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
     - uses: actions/upload-artifact@v2
       with:
-        name: agent-${{ env.AGENT_VERSION }}-x86_64-unknown-linux-musl.tar.xz
-        path: "dist/agent-${{ env.AGENT_VERSION }}-x86_64-unknown-linux-musl.tar.xz"
+        name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-unknown-linux-musl.tar.xz
+        path: "dist/cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-unknown-linux-musl.tar.xz"
+        retention-days: 1
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: cluvio-agent_${{ env.AGENT_VERSION }}_amd64.deb
+        path: "target/x86_64-unknown-linux-musl/debian/cluvio-agent_${{ env.AGENT_VERSION }}_amd64.deb"
         retention-days: 1
 
   build-aarch64-unknown-linux-musl:
@@ -45,15 +54,24 @@ jobs:
     - name: Install MUSL target
       run: rustup target add aarch64-unknown-linux-musl
 
+    - name: Install cargo-deb
+      run: cargo install cargo-deb
+
     - name: Package agent.
-      run: make build-agent-aarch64-unknown-linux-musl
+      run: make deb-agent-aarch64-unknown-linux-musl
 
     - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
     - uses: actions/upload-artifact@v2
       with:
-        name: agent-${{ env.AGENT_VERSION }}-aarch64-unknown-linux-musl.tar.xz
-        path: "dist/agent-${{ env.AGENT_VERSION }}-aarch64-unknown-linux-musl.tar.xz"
+        name: cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-unknown-linux-musl.tar.xz
+        path: "dist/cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-unknown-linux-musl.tar.xz"
+        retention-days: 1
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: cluvio-agent_${{ env.AGENT_VERSION }}_arm64.deb
+        path: "target/aarch64-unknown-linux-musl/debian/cluvio-agent_${{ env.AGENT_VERSION }}_arm64.deb"
         retention-days: 1
 
   build-x86_64-apple-darwin:
@@ -78,14 +96,14 @@ jobs:
 
     - uses: actions/upload-artifact@v2
       with:
-        name: agent-${{ env.AGENT_VERSION }}-x86_64-apple-darwin.tar.xz
-        path: "dist/agent-${{ env.AGENT_VERSION }}-x86_64-apple-darwin.tar.xz"
+        name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-apple-darwin.tar.xz
+        path: "dist/cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-apple-darwin.tar.xz"
         retention-days: 1
 
     - uses: actions/upload-artifact@v2
       with:
-        name: agent-${{ env.AGENT_VERSION }}-x86_64-apple-darwin.dmg
-        path: agent-${{ env.AGENT_VERSION }}-x86_64-apple-darwin.dmg
+        name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-apple-darwin.dmg
+        path: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-apple-darwin.dmg
         retention-days: 1
 
   build-aarch64-apple-darwin:
@@ -110,14 +128,14 @@ jobs:
 
     - uses: actions/upload-artifact@v2
       with:
-        name: agent-${{ env.AGENT_VERSION }}-aarch64-apple-darwin.tar.xz
-        path: "dist/agent-${{ env.AGENT_VERSION }}-aarch64-apple-darwin.tar.xz"
+        name: cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-apple-darwin.tar.xz
+        path: "dist/cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-apple-darwin.tar.xz"
         retention-days: 1
 
     - uses: actions/upload-artifact@v2
       with:
-        name: agent-${{ env.AGENT_VERSION }}-aarch64-apple-darwin.dmg
-        path: agent-${{ env.AGENT_VERSION }}-aarch64-apple-darwin.dmg
+        name: cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-apple-darwin.dmg
+        path: cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-apple-darwin.dmg
         retention-days: 1
 
   build-x86_64-pc-windows-msvc:
@@ -137,8 +155,8 @@ jobs:
 
     - uses: actions/upload-artifact@v2
       with:
-        name: agent-${{ env.AGENT_VERSION }}-x86_64-pc-windows-msvc.zip
-        path: "dist/agent-${{ env.AGENT_VERSION }}-x86_64-pc-windows-msvc.zip"
+        name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-pc-windows-msvc.zip
+        path: "dist/cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-pc-windows-msvc.zip"
         retention-days: 1
 
   release:
@@ -157,37 +175,47 @@ jobs:
 
     - uses: actions/download-artifact@v2
       with:
-        name: agent-${{ env.AGENT_VERSION }}-aarch64-unknown-linux-musl.tar.xz
+        name: cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-unknown-linux-musl.tar.xz
         path: dist/
 
     - uses: actions/download-artifact@v2
       with:
-        name: agent-${{ env.AGENT_VERSION }}-aarch64-apple-darwin.tar.xz
+        name: cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-apple-darwin.tar.xz
         path: dist/
 
     - uses: actions/download-artifact@v2
       with:
-        name: agent-${{ env.AGENT_VERSION }}-aarch64-apple-darwin.dmg
+        name: cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-apple-darwin.dmg
         path: dist/
 
     - uses: actions/download-artifact@v2
       with:
-        name: agent-${{ env.AGENT_VERSION }}-x86_64-unknown-linux-musl.tar.xz
+        name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-unknown-linux-musl.tar.xz
         path: dist/
 
     - uses: actions/download-artifact@v2
       with:
-        name: agent-${{ env.AGENT_VERSION }}-x86_64-apple-darwin.tar.xz
+        name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-apple-darwin.tar.xz
         path: dist/
 
     - uses: actions/download-artifact@v2
       with:
-        name: agent-${{ env.AGENT_VERSION }}-x86_64-apple-darwin.dmg
+        name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-apple-darwin.dmg
         path: dist/
 
     - uses: actions/download-artifact@v2
       with:
-        name: agent-${{ env.AGENT_VERSION }}-x86_64-pc-windows-msvc.zip
+        name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-pc-windows-msvc.zip
+        path: dist/
+
+    - uses: actions/download-artifact@v2
+      with:
+        name: cluvio-agent_${{ env.AGENT_VERSION }}_amd64.deb
+        path: dist/
+
+    - uses: actions/download-artifact@v2
+      with:
+        name: cluvio-agent_${{ env.AGENT_VERSION }}_arm64.deb
         path: dist/
 
     - name: Create release.

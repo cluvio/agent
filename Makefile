@@ -6,6 +6,8 @@ AGENT_VERSION = 0.1.0
 	build-agent-x86_64-apple-darwin \
 	build-agent-aarch64-apple-darwin \
 	build-agent-x86_64-pc-windows-msvc \
+	deb-agent-x86_64-unknown-linux-musl \
+	deb-agent-aarch64-unknown-linux-musl \
 	agent-version
 
 .EXPORT_ALL_VARIABLES:
@@ -26,7 +28,6 @@ build-agent-x86_64-unknown-linux-musl: clean
 	strip build/bin/cluvio-agent
 	mv build/bin/cluvio-agent build/cluvio-agent
 	tar caf dist/cluvio-agent-$(AGENT_VERSION)-x86_64-unknown-linux-musl.tar.xz -C build/ cluvio-agent
-	cargo deb -p cluvio-agent --target=x86_64-unknown-linux-musl
 
 build-agent-aarch64-unknown-linux-musl: export TARGET_CC = aarch64-linux-gnu-gcc
 build-agent-aarch64-unknown-linux-musl: export TARGET_AR = aarch64-linux-gnu-ar
@@ -83,6 +84,12 @@ build-agent-x86_64-pc-windows-msvc: clean
 	strip build/bin/cluvio-agent.exe
 	mv build/bin/cluvio-agent.exe build/cluvio-agent.exe
 	(cd build && 7z.exe a ../dist/cluvio-agent-$(AGENT_VERSION)-x86_64-pc-windows-msvc.zip cluvio-agent.exe)
+
+deb-agent-x86_64-unknown-linux-musl: build-agent-x86_64-unknown-linux-musl
+	cargo deb -p cluvio-agent --target=x86_64-unknown-linux-musl
+
+deb-agent-aarch64-unknown-linux-musl: build-agent-aarch64-unknown-linux-musl
+	cargo deb -p cluvio-agent --target=aarch64-unknown-linux-musl
 
 clean:
 	rm -rf build/ dist/
