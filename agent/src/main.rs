@@ -1,6 +1,11 @@
 use agent::{self, Agent, Config, Options};
+use directories::BaseDirs;
+use std::env;
+use std::path::{Path, PathBuf};
 use structopt::StructOpt;
 use util::{base64, exit};
+
+const CONFIG_FILE_NAME: &str = "cluvio-agent.toml";
 
 #[tokio::main]
 async fn main() {
@@ -27,11 +32,13 @@ async fn main() {
 
     let cfg: Config = {
         let path = opts.config
-            .ok_or_else(|| "missing config path".to_string())
+            .or_else(find_config)
+            .ok_or_else(|| "missing config file".to_string())
             .unwrap_or_else(exit("config"));
+        log::info!(?path, "configuration");
         let mut cfg = config::Config::default();
         cfg.merge(config::File::from(path)).unwrap_or_else(exit("config"));
-        cfg.merge(config::Environment::with_prefix("AGENT")).unwrap_or_else(exit("config"));
+        cfg.merge(config::Environment::with_prefix("CLUVIO_AGENT")).unwrap_or_else(exit("config"));
         cfg.try_into().unwrap_or_else(exit("config"))
     };
 
@@ -49,5 +56,43 @@ fn print_keypair() {
     let p = base64::encode(s.public_key().as_bytes());
     let s = base64::encode(s.to_bytes());
     println!("public-key: {}\nsecret-key: {}", p, s)
+}
+
+/// Try to find the config file in certain well-known locations.
+fn find_config() -> Option<PathBuf> {
+    fn exe_config() -> Option<PathBuf> {
+        if let Ok(mut this) = env::current_exe() {
+            this.pop();
+            let cfg = this.join(CONFIG_FILE_NAME);
+            if cfg.is_file() {
+                return Some(cfg)
+            }
+        }
+        None
+    }
+    fn usr_config() -> Option<PathBuf> {
+        if let Some(base) = BaseDirs::new() {
+            let cfg = base.config_dir().join(CONFIG_FILE_NAME);
+            if cfg.is_file() {
+                return Some(cfg)
+            }
+        }
+        None
+    }
+    fn sys_config() -> Option<PathBuf> {
+        let cfg = Path::new("/etc").join(CONFIG_FILE_NAME);
+        if cfg.is_file() {
+            return Some(cfg)
+        }
+        None
+    }
+
+    if cfg!(unix) {
+        exe_config().or_else(usr_config).or_else(sys_config)
+    } else if cfg!(windows) {
+        usr_config().or_else(exe_config)
+    } else {
+        None
+    }
 }
 

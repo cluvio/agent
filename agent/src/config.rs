@@ -20,7 +20,7 @@ pub use ipnet::{IpNet, Ipv4Net, Ipv6Net};
 #[structopt(name = "cluvio-agent")]
 pub struct Options {
     /// Path to configuration file.
-    #[structopt(short, long, parse(from_os_str), required_unless_one(&["gen-keypair", "version"]))]
+    #[structopt(short, long, parse(from_os_str))]
     pub config: Option<PathBuf>,
 
     /// Show version information.
