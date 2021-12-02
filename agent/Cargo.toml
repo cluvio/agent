@@ -30,9 +30,9 @@ webpki-roots = "0.22"
 yamux        = "0.9.0"
 
 [dependencies.tokio]
-version = "1.10"
+version          = "1.10"
 default-features = false
-features = ["io-util", "macros", "net", "rt-multi-thread", "time", "sync"]
+features         = ["io-util", "macros", "net", "rt-multi-thread", "time", "sync"]
 
 [dependencies.tracing-subscriber]
 version  = "0.3.1"
@@ -42,11 +42,31 @@ features = ["env-filter", "json"]
 quickcheck = "1.0.3"
 rand       = "0.8.4"
 
+# Debian archive metadata
+
 [package.metadata.deb]
 copyright          = "2021, Cluvio GmbH"
 maintainer         = "Cluvio GmbH <admin@cluvio.com>"
 maintainer-scripts = "../scripts/linux"
 
 [package.metadata.deb.systemd-units]
-start = false
+start           = false
 stop-on-upgrade = false
+
+# RPM archive metadata
+
+[package.metadata.generate-rpm]
+post_install_script  = "systemctl --enable cluvio-agent.service"
+pre_uninstall_script = "systemctl --disable cluvio-agent.service"
+
+[[package.metadata.generate-rpm.assets]]
+source = "target/release/cluvio-agent"
+dest   = "/usr/bin/cluvio-agent"
+mode   = "755"
+
+[[package.metadata.generate-rpm.assets]]
+source = "../scripts/linux/cluvio-agent.service"
+dest   = "/lib/systemd/system/cluvio-agent.service"
+mode   = "644"
+config = true
+
