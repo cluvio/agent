@@ -56,8 +56,8 @@ stop-on-upgrade = false
 # RPM archive metadata
 
 [package.metadata.generate-rpm]
-post_install_script  = "systemctl --enable cluvio-agent.service"
-pre_uninstall_script = "systemctl --disable cluvio-agent.service"
+post_install_script  = "systemctl enable cluvio-agent.service"
+pre_uninstall_script = "systemctl disable cluvio-agent.service"
 
 [[package.metadata.generate-rpm.assets]]
 source = "target/release/cluvio-agent"
