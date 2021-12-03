@@ -92,6 +92,7 @@ deb-agent-aarch64-unknown-linux-musl: build-agent-aarch64-unknown-linux-musl
 	cargo deb -p cluvio-agent --target=aarch64-unknown-linux-musl
 
 rpm-agent-x86_64-unknown-linux-musl: build-agent-x86_64-unknown-linux-musl
+	strip target/x86_64-unknown-linux-musl/release/cluvio-agent
 	cargo generate-rpm -p agent --target=x86_64-unknown-linux-musl
 
 rpm-agent-aarch64-unknown-linux-musl: build-agent-aarch64-unknown-linux-musl
