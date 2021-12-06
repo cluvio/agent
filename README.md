@@ -24,14 +24,14 @@ at various platform-dependent file system locations:
 
 ### Linux
 
-1. Next to the installed executable. For example if the agent is installed as
+1. Next to the installed executable. For example, if the agent is installed as
 `$HOME/cluvio/cluvio-agent` it will try to load `$HOME/cluvio/cluvio-agent.toml`.
 2. In `$XDG_CONFIG_HOME` or `$HOME/.config`.
 3. In `/etc`.
 
 ### MacOS
 
-1. Next to the installed executable. For example if the agent is installed as
+1. Next to the installed executable. For example, if the agent is installed as
 `$HOME/cluvio/cluvio-agent` it will try to load `$HOME/cluvio/cluvio-agent.toml`.
 2. In `$HOME/Library/Application Support`.
 3. In `/etc`
@@ -55,10 +55,10 @@ of the options are:
 - __`-c`__ | __`--config`__ accepts a path to a configuration file. This takes precedence
 over the locations mentioned above which are checked for a `cluvio-agent.toml`.
 - __`-l`__ | __`--log`__ specifies an explicit log level. The following log levels are used
-for printing log messages to the console: `TRACE`, `DEBUG`, `INFO`, `WARN`, `ERROR`. By
-default log messages on level `TRACE` and `DEBUG` are not shown. To include for instance
+for printing log messages to the console: `trace`, `debug`, `info`, `warn`, `error`. By
+default log messages on level `trace` and `debug` are not shown. To include for instance
 debug messages, the agent can be invoked with `--log debug`. The messages are also scoped
-to various modules. To only see log messages from level `DEBUG` or higher from the agent
+to various modules. To only see log messages from level `debug` or higher from the agent
 one could use `--log agent=debug`.
 - __`-j`__ | __`--json`__ switches the log format to JSON. By default a human-friendly log
 format is used. If the logs are processed by other programmes a more structured format may
@@ -69,9 +69,9 @@ be useful which is what `--json` provides.
 #### Linux
 
 On Linux, the RPM and DEB archives include a unit file for systemd. Installation enables the
-agent, but does not yet start the service. The unit file can be found at
+agent, but does not yet start the service. The unit file can also be found at
 [scripts/linux/cluvio-agent.service](/scripts/linux/cluvio-agent.service). Once the
 configuration has been retrieved from Cluvio, the usual `systemctl` commands can be used to
 start, stop or inspect the agent, e.g. `systemctl status cluvio-agent.service`. Logs can
-be found via journalctl, e.g. `journalctl -u cluvio-agent.service`.
+be seen via `journalctl`, e.g. `journalctl -u cluvio-agent.service`.
 
