@@ -38,7 +38,7 @@ async fn main() {
         log::info!(?path, "configuration");
         let mut cfg = config::Config::default();
         cfg.merge(config::File::from(path)).unwrap_or_else(exit("config"));
-        cfg.merge(config::Environment::with_prefix("CLUVIO_AGENT")).unwrap_or_else(exit("config"));
+        cfg.merge(config::Environment::with_prefix("CLUVIO_AGENT").separator("_")).unwrap_or_else(exit("config"));
         cfg.try_into().unwrap_or_else(exit("config"))
     };
 
