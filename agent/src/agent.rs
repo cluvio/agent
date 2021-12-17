@@ -122,17 +122,17 @@ impl Agent {
                 // A new server message.
                 message = recv(&mut connection.reader) => match message {
                     Err(e) => {
-                        log::debug!("error reading from server: {}", e);
+                        log::error!("error reading from server: {}", e);
                         connection = self.reconnect(connection).await
                     }
                     Ok(None) => {
-                        log::debug!("connection to server lost, reconnecting ...");
+                        log::warn!("connection to server lost, reconnecting ...");
                         connection = self.reconnect(connection).await
                     }
                     Ok(Some(m)) => match self.on_message(&mut connection.writer, m).await {
                         Err(Error::Terminated(reason)) => return reason,
                         Err(e) => {
-                            log::debug!("failed to answer server message: {}", e);
+                            log::error!("failed to answer server message: {}", e);
                             connection = self.reconnect(connection).await
                         }
                         Ok(Some(mut conn)) => {
@@ -149,7 +149,7 @@ impl Agent {
                 // A new inbound stream has been opened.
                 stream = connection.inbound.recv() => match stream {
                     None => {
-                        log::debug!("connection to server lost, reconnecting ...");
+                        log::warn!("connection to server lost, reconnecting ...");
                         connection = self.reconnect(connection).await
                     }
                     Some(s) => {
@@ -172,13 +172,13 @@ impl Agent {
                         if e.is_panic() {
                             log::error!("test task panic: {}", e)
                         } else {
-                            log::debug!("test task error: {}", e)
+                            log::warn!("test task error: {}", e)
                         }
                     }
                     Ok((re, code)) => {
                         let data = Client::Test { re, code };
                         if let Err(e) = send(&mut connection.writer, Message::new(data)).await {
-                            log::debug!(id = %re, "error sending message to server: {}", e);
+                            log::warn!(id = %re, "error sending message to server: {}", e);
                             connection = self.reconnect(connection).await
                         }
                     }
@@ -190,7 +190,7 @@ impl Agent {
                         if e.is_panic() {
                             log::error!("stream task panic: {}", e)
                         } else {
-                            log::debug!("stream task error: {}", e)
+                            log::warn!("stream task error: {}", e)
                         }
                     }
                 }
@@ -200,14 +200,14 @@ impl Agent {
                     PingState::Idle => {
                         let msg = Message::new(Client::Ping);
                         if let Err(e) = send(&mut connection.writer, &msg).await {
-                            log::debug!("error sending message to server: {}", e);
+                            log::warn!("error sending message to server: {}", e);
                             connection = self.reconnect(connection).await
                         } else {
                             self.ping_state = PingState::Awaiting(msg.id)
                         }
                     }
                     PingState::Awaiting(id) => {
-                        log::info!(%id, "no pong from server");
+                        log::warn!(%id, "no pong from server");
                         connection = self.reconnect(connection).await
                     }
                 }
@@ -240,7 +240,7 @@ impl Agent {
                         send(writer, Message::new(data)).await?;
                     }
                     Err(e) => {
-                        log::debug!(id = %msg.id, "failed to decrypt challenge: {}", e);
+                        log::warn!(id = %msg.id, "failed to decrypt challenge: {}", e);
                         let data = Client::Error {
                             re: msg.id,
                             code: Some(ErrorCode::DecryptionFailed),
@@ -264,7 +264,7 @@ impl Agent {
                         let cf = self.config.clone();
                         self.tests.push(spawn(async move {
                             if let Err(e) = stream::connect(id, &cf, &addr).await {
-                                log::debug!(%id, "test connection failed: {}", e);
+                                log::warn!(%id, "test connection failed: {}", e);
                                 (id, Some(ErrorCode::CouldNotConnect))
                             } else {
                                 log::debug!(%id, "test connection suceeded");
@@ -281,7 +281,7 @@ impl Agent {
                 return Ok(Some(c))
             }
             None => {
-                log::debug!(id = %msg.id, "ignoring unknown gateway message")
+                log::warn!(id = %msg.id, "ignoring unknown gateway message")
             }
         }
         Ok(None)
@@ -346,7 +346,7 @@ impl Agent {
             }
             match try_connect(&self.client, &self.version, &self.config).await {
                 Ok(conn) => {
-                    log::debug!("connected to server: {}:{}", host.as_str(), port);
+                    log::info!("connected to server: {}:{}", host.as_str(), port);
                     self.failures = 0;
                     self.ping_state = PingState::Idle;
                     self.connected_timestamp = Some(Instant::now());
@@ -375,7 +375,7 @@ impl Agent {
     /// close of the current connection.
     async fn reconnect(&mut self, mut conn: Connection) -> Connection {
         if let Err(e) = timeout(Duration::from_secs(5), conn.ctrl.close()).await {
-            log::debug!("error closing connection: {}", e)
+            log::warn!("error closing connection: {}", e)
         }
         drop(conn);
         self.connect().await
