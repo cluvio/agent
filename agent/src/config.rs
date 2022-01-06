@@ -24,14 +24,14 @@ pub struct Options {
     /// If this option is not present, a config file named `cluvio-agent.toml` is looked
     /// for in various locations.
     ///
-    /// On Unix:
-    ///   1. The directory of the `cluvio-agent` executable.
+    /// Unix:
+    ///   1. In the directory of the `cluvio-agent` executable.
     ///   2. Either in `$HOME/.config` or else (if on MacOS) in `$HOME`.
     ///   3. In `/etc`.
     ///
-    /// On Windows:
+    /// Windows:
     ///   1. In `FOLDERID_RoamingAppData`.
-    ///   2. The directory of the `cluvio-agent` executable.
+    ///   2. In the directory of the `cluvio-agent` executable.
     #[structopt(short, long, parse(from_os_str), verbatim_doc_comment)]
     pub config: Option<PathBuf>,
 
