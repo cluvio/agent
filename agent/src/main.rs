@@ -72,7 +72,12 @@ fn find_config() -> Option<PathBuf> {
     }
     fn usr_config() -> Option<PathBuf> {
         if let Some(base) = BaseDirs::new() {
-            let cfg = base.config_dir().join(CONFIG_FILE_NAME);
+            let cfg =
+                if cfg!(target_os = "macos") {
+                    base.home_dir().join(CONFIG_FILE_NAME)
+                } else {
+                    base.config_dir().join(CONFIG_FILE_NAME)
+                };
             if cfg.is_file() {
                 return Some(cfg)
             }
