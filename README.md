@@ -1,6 +1,6 @@
 # Cluvio Agent
 
-A Cluvio Agent establishes connectivity between the Cluvio data centre and the user's
+A Cluvio agent establishes connectivity between the Cluvio data centre and the user's
 database. It maintains a single connection to Cluvio (using multiplexing to enable the
 concurrent transfer of independent data streams) and creates connections to databases
 when necessary. It is an alternative to running an SSH server or allowing inbound
@@ -14,13 +14,12 @@ need to allow inbound connections, it is sufficient if the agent is able to crea
 outbound connection to Cluvio. Security aspects are discussed in more detail in
 [SECURITY.md](/SECURITY.md).
 
-## Installation
+## Configuration
 
-Pre-built binaries for Linux, MacOS and Windows are provided on GitHub at
-https://github.com/cluvio/agent/releases. Before installing an agent a configuration
-file should be retrieved from Cluvio at https://app.cluvio.com/settings/datasources/new.
-An installed agent will attempt to find the configuration file named `cluvio-agent.toml`
-at various platform-dependent file system locations:
+Before installing an agent a configuration file should be retrieved from Cluvio at
+https://app.cluvio.com/settings/datasources/new. An installed agent will attempt to find
+the configuration file named `cluvio-agent.toml` at various platform-dependent file system
+locations:
 
 ### Linux
 
@@ -33,7 +32,7 @@ at various platform-dependent file system locations:
 
 1. Next to the installed executable. For example, if the agent is installed as
 `$HOME/cluvio/cluvio-agent` it will try to load `$HOME/cluvio/cluvio-agent.toml`.
-2. In `$HOME/Library/Application Support`.
+2. In `$HOME`.
 3. In `/etc`
 
 ### Windows
@@ -43,6 +42,16 @@ at various platform-dependent file system locations:
 
 *Please note that configuration files should not be shared between multiple agents.* If
 you want to run multiple agents, download a separate configuration for each installation.
+
+## Installation
+
+Pre-built binaries for Linux, MacOS and Windows are provided on GitHub at
+https://github.com/cluvio/agent/releases.
+
+### MacOS
+
+For users of [homebrew][1] a custom tap is available at https://github.com/cluvio/homebrew-tools.
+The agent can be installed with `brew install cluvio/homebrew-tools/cluvio-agent`.
 
 ## Running an agent
 
@@ -75,3 +84,9 @@ configuration has been retrieved from Cluvio, the usual `systemctl` commands can
 start, stop or inspect the agent, e.g. `systemctl status cluvio-agent.service`. Logs can
 be seen via `journalctl`, e.g. `journalctl -u cluvio-agent.service`.
 
+#### MacOS
+
+If [homebrew][1] is used form installation, the agent can be managed with the `services`
+subcommand, e.g. `brew services start cluvio-agent`.
+
+[1]: https://brew.sh/
