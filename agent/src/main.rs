@@ -33,8 +33,8 @@ async fn main() {
     let cfg: Config = {
         let path = opts.config
             .or_else(find_config)
-            .ok_or_else(|| "missing config file".to_string())
-            .unwrap_or_else(exit("config"));
+            .ok_or_else(|| concat!("see `", env!("CARGO_PKG_NAME"), " --help` for details").to_string())
+            .unwrap_or_else(exit("config file not found"));
         log::info!(?path, "configuration");
         let mut cfg = config::Config::default();
         cfg.merge(config::File::from(path)).unwrap_or_else(exit("config"));
