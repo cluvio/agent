@@ -28,6 +28,7 @@ toml         = "0.5.8"
 util         = { path = "../util" }
 webpki-roots = "0.22"
 yamux        = "0.9.0"
+static_vcruntime = "1.5"
 
 [dependencies.tokio]
 version          = "1.10"
@@ -69,4 +70,3 @@ source = "../scripts/linux/cluvio-agent.service"
 dest   = "/lib/systemd/system/cluvio-agent.service"
 mode   = "644"
 config = true
-
