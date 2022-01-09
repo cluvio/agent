@@ -1,5 +1,3 @@
-extern crate static_vcruntime;
-
 use cluvio_agent::{self, Agent, Config, Options};
 use directories::BaseDirs;
 use std::env;
@@ -102,3 +100,4 @@ fn find_config() -> Option<PathBuf> {
         None
     }
 }
+
