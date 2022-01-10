@@ -26,11 +26,16 @@ pub struct Options {
     ///
     /// Unix:
     ///   1. In the directory of the `cluvio-agent` executable.
-    ///   2. Either in `$HOME/.config` or else (if on MacOS) in `$HOME`.
+    ///   2. In `$HOME/.config`.
+    ///   3. In `/etc`.
+    ///
+    /// Mac:
+    ///   1. In the directory of the `cluvio-agent` executable.
+    ///   2. In `$HOME`.
     ///   3. In `/etc`.
     ///
     /// Windows:
-    ///   1. In `FOLDERID_RoamingAppData`.
+    ///   1. In `%USERPROFILE%\AppData\Roaming` (`%APPDATA%`).
     ///   2. In the directory of the `cluvio-agent` executable.
     #[structopt(short, long, parse(from_os_str), verbatim_doc_comment)]
     pub config: Option<PathBuf>,
