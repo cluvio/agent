@@ -199,7 +199,7 @@ jobs:
 
     - uses: actions/download-artifact@v2
       with:
-        name: cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-unknown-linux-musl.tar.xz
+        name: cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-linux.tar.xz
         path: dist/
 
     - uses: actions/download-artifact@v2
@@ -214,7 +214,7 @@ jobs:
 
     - uses: actions/download-artifact@v2
       with:
-        name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-unknown-linux-musl.tar.xz
+        name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-linux.tar.xz
         path: dist/
 
     - uses: actions/download-artifact@v2
