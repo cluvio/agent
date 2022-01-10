@@ -40,5 +40,5 @@ jobs:
       run: cargo test --all --all-features
 
     - name: Build agent.
-      run: make build-agent-x86_64-unknown-linux-musl
+      run: make build-agent-x86_64-linux
 
