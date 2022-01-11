@@ -17,7 +17,8 @@ async fn main() {
     }
 
     let subscriber = tracing_subscriber::fmt()
-        .with_env_filter(opts.log.unwrap_or_else(|| "cluvio_agent=info".to_string()));
+        .with_env_filter(opts.log.unwrap_or_else(|| "cluvio_agent=info".to_string()))
+        .with_ansi(cfg!(not(windows)));
 
     if opts.json {
         subscriber.json().init();
