@@ -75,6 +75,7 @@ build-agent-aarch64-macos: clean
 	scripts/macos/apple-notarize.sh build/cluvio-agent cluvio-agent-$(AGENT_VERSION)-aarch64-macos
 	tar caf dist/cluvio-agent-$(AGENT_VERSION)-aarch64-macos.tar.xz -C build/ cluvio-agent
 
+build-agent-x86_64-windows: export RUSTFLAGS = -C target-feature=+crt-static
 build-agent-x86_64-windows: clean
 	mkdir -p build dist
 	cargo install \
