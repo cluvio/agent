@@ -276,7 +276,6 @@ impl fmt::Display for ErrorCode {
 /// Possible reasons for termination.
 #[derive(Copy, Clone, Debug, Decode, Encode, Serialize)]
 #[serde(rename_all = "kebab-case")]
-#[cbor(index_only)]
 pub enum Reason {
     /// The agent is not authentic.
     ///
@@ -285,7 +284,11 @@ pub enum Reason {
     /// The agent is not authorized to connect.
     #[n(1)] Unauthorized,
     /// The agent version is not supported.
-    #[n(2)] UnsupportedVersion
+    #[n(2)] UnsupportedVersion,
+    /// The agent is already connected.
+    #[n(3)] AlreadyConnected {
+        #[n(0)] from: SocketAddr
+    }
 }
 
 impl fmt::Display for Reason {
@@ -293,7 +296,8 @@ impl fmt::Display for Reason {
         match self {
             Reason::Unauthenticated    => f.write_str("unauthenticated agent"),
             Reason::Unauthorized       => f.write_str("unauthorized agent"),
-            Reason::UnsupportedVersion => f.write_str("unsupported agent version")
+            Reason::UnsupportedVersion => f.write_str("unsupported agent version"),
+            Reason::AlreadyConnected { from } => write!(f, "agent is already connected from {}", from)
         }
     }
 }
