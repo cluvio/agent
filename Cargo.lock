@@ -222,9 +222,9 @@ dependencies = [
 
 [[package]]
 name = "crypto_box"
-version = "0.7.0"
+version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d6f1231ecfce2185d2863b5c311e251ee2e26f7d115a77baaecc949cae63432f"
+checksum = "5c2b974d4124d78e9d061e06ff1d3a2aaef9d925b5f23bb3e0b9410240279f16"
 dependencies = [
  "chacha20",
  "chacha20poly1305",
