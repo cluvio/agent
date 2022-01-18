@@ -298,8 +298,7 @@ impl Agent {
             let future   = client.connect_any(iter, hostname);
             let stream   = timeout(cfg.connect_timeout, future).await??;
             let mut conn = {
-                let mut cfg = yamux::Config::default();
-                cfg.set_window_update_mode(yamux::WindowUpdateMode::OnRead);
+                let cfg = yamux::Config::default();
                 yamux::Connection::new(stream.compat(), cfg, yamux::Mode::Client)
             };
             let mut ctrl = conn.control();
