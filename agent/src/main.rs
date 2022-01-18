@@ -55,7 +55,7 @@ async fn main() {
 fn print_keypair() {
     let s = sealed_boxes::gen_secret_key();
     let p = base64::encode(s.public_key().as_bytes());
-    let s = base64::encode(s.to_bytes());
+    let s = base64::encode(s.as_bytes());
     println!("public-key: {}\nsecret-key: {}", p, s)
 }
 

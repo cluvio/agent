@@ -45,7 +45,7 @@ pub fn decode_secret_key<'de, D: Deserializer<'de>>(d: D) -> Result<SecretKey, D
 
 /// Serialize private key as base64-encoded string.
 pub fn encode_secret_key<S: Serializer>(sk: &SecretKey, ser: S) -> Result<S::Ok, S::Error> {
-    let b64 = crate::base64::encode(sk.to_bytes());
+    let b64 = crate::base64::encode(sk.as_bytes());
     ser.serialize_str(&b64)
 }
 
