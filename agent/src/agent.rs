@@ -13,7 +13,7 @@ use sealed_boxes::decrypt;
 use std::borrow::Cow;
 use std::mem;
 use std::sync::Arc;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 use tokio::net;
 use tokio::{select, spawn};
 use tokio::sync::mpsc;
@@ -28,12 +28,11 @@ pub struct Agent {
     version: Version,
     config: Arc<Config>,
     client: tls::Client,
-    failures: u32,
+    attempt: u8,
     ping_state: PingState,
     streams: FuturesUnordered<JoinHandle<Result<(), Error>>>,
     tests: FuturesUnordered<JoinHandle<(Id, Option<ErrorCode>)>>,
-    drainage: SelectAll<BoxStream<'static, yamux::Stream>>,
-    connected_timestamp: Option<Instant>
+    drainage: SelectAll<BoxStream<'static, yamux::Stream>>
 }
 
 /// Connection parts.
@@ -85,7 +84,7 @@ impl Agent {
             version: crate::version()?,
             config: Arc::new(cfg),
             client,
-            failures: 0,
+            attempt: 0,
             ping_state: PingState::Idle,
             streams: futures_unordered(),
             tests: futures_unordered(),
@@ -93,8 +92,7 @@ impl Agent {
                 let mut s = SelectAll::new();
                 s.push(futures::stream::pending().boxed());
                 s
-            },
-            connected_timestamp: None
+            }
         })
     }
 
@@ -220,6 +218,9 @@ impl Agent {
         log::trace!(id = %msg.id, "received message data: {:?}", msg.data);
 
         match msg.data {
+            Some(Server::Accepted) => {
+                self.attempt = 0
+            }
             Some(Server::Ping) => {
                 send(writer, Message::new(Client::Pong { re: msg.id })).await?;
             }
@@ -280,6 +281,9 @@ impl Agent {
                 let c = self.connect().await;
                 return Ok(Some(c))
             }
+            Some(Server::Error { msg }) => {
+                log::error!(?msg, "server error")
+            }
             None => {
                 log::warn!(id = %msg.id, "ignoring unknown gateway message")
             }
@@ -336,33 +340,22 @@ impl Agent {
         let host = &self.config.server.host;
         let port = self.config.server.port;
         loop {
-            if let Some(ts) = self.connected_timestamp {
-                let delta = Instant::now() - ts;
-                if let Some(d) = Duration::from_secs(5).checked_sub(delta) {
-                    log::debug!("waiting {}s ...", d.as_secs());
-                    sleep(d).await
-                }
+            if self.attempt > 0 {
+                let d = Duration::from_secs(2u64.pow(self.attempt.into()));
+                log::info!("waiting {} before connecting ...", format_duration(d));
+                sleep(d).await
+            }
+            if self.attempt < 6 {
+                self.attempt += 1
             }
             match try_connect(&self.client, &self.version, &self.config).await {
                 Ok(conn) => {
                     log::info!("connected to server: {}:{}", host.as_str(), port);
-                    self.failures = 0;
                     self.ping_state = PingState::Idle;
-                    self.connected_timestamp = Some(Instant::now());
                     return conn
                 }
                 Err(e) => {
-                    self.connected_timestamp = None;
-                    let duration = Duration::from_secs(2u64.pow(self.failures));
-                    log::warn! {
-                        "failed to connect to {}:{}: {}; trying again in {} ...",
-                        host.as_str(),
-                        port,
-                        e,
-                        format_duration(duration)
-                    };
-                    sleep(duration).await;
-                    if self.failures < 6 { self.failures += 1 }
+                    log::warn!(err = %e, "failed to connect to {}:{}", host.as_str(), port)
                 }
             }
         }

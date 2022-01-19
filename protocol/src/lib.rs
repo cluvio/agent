@@ -64,7 +64,16 @@ pub enum Server<'a> {
     },
 
     /// Open a new connection and drain the existing one.
-    #[n(5)] SwitchToNewConnection
+    #[n(5)] SwitchToNewConnection,
+
+    /// A server error.
+    #[n(6)] Error {
+        /// Error message.
+        #[b(0)] msg: Cow<'a, str>
+    },
+
+    /// The server has accepted the client.
+    #[n(7)] Accepted
 }
 
 // Custom impl to skip over sensitive data.
@@ -82,7 +91,11 @@ impl fmt::Debug for Server<'_> {
             Server::Test { addr } =>
                 f.debug_struct("Test").field("addr", addr).finish(),
             Server::SwitchToNewConnection =>
-                f.debug_struct("SwitchToNewConnection").finish()
+                f.debug_struct("SwitchToNewConnection").finish(),
+            Server::Error { msg } =>
+                f.debug_struct("Error").field("msg", msg).finish(),
+            Server::Accepted =>
+                f.debug_tuple("Accepted").finish()
         }
     }
 }
@@ -284,11 +297,7 @@ pub enum Reason {
     /// The agent is not authorized to connect.
     #[n(1)] Unauthorized,
     /// The agent version is not supported.
-    #[n(2)] UnsupportedVersion,
-    /// The agent is already connected.
-    #[n(3)] AlreadyConnected {
-        #[n(0)] from: SocketAddr
-    }
+    #[n(2)] UnsupportedVersion
 }
 
 impl fmt::Display for Reason {
@@ -296,8 +305,7 @@ impl fmt::Display for Reason {
         match self {
             Reason::Unauthenticated    => f.write_str("unauthenticated agent"),
             Reason::Unauthorized       => f.write_str("unauthorized agent"),
-            Reason::UnsupportedVersion => f.write_str("unsupported agent version"),
-            Reason::AlreadyConnected { from } => write!(f, "agent is already connected from {}", from)
+            Reason::UnsupportedVersion => f.write_str("unsupported agent version")
         }
     }
 }
