@@ -64,7 +64,16 @@ pub enum Server<'a> {
     },
 
     /// Open a new connection and drain the existing one.
-    #[n(5)] SwitchToNewConnection
+    #[n(5)] SwitchToNewConnection,
+
+    /// A server error.
+    #[n(6)] Error {
+        /// Error message.
+        #[b(0)] msg: Cow<'a, str>
+    },
+
+    /// The server has accepted the client.
+    #[n(7)] Accepted
 }
 
 // Custom impl to skip over sensitive data.
@@ -82,7 +91,11 @@ impl fmt::Debug for Server<'_> {
             Server::Test { addr } =>
                 f.debug_struct("Test").field("addr", addr).finish(),
             Server::SwitchToNewConnection =>
-                f.debug_struct("SwitchToNewConnection").finish()
+                f.debug_struct("SwitchToNewConnection").finish(),
+            Server::Error { msg } =>
+                f.debug_struct("Error").field("msg", msg).finish(),
+            Server::Accepted =>
+                f.debug_tuple("Accepted").finish()
         }
     }
 }
@@ -276,7 +289,6 @@ impl fmt::Display for ErrorCode {
 /// Possible reasons for termination.
 #[derive(Copy, Clone, Debug, Decode, Encode, Serialize)]
 #[serde(rename_all = "kebab-case")]
-#[cbor(index_only)]
 pub enum Reason {
     /// The agent is not authentic.
     ///
