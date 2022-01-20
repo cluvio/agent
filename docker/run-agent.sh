@@ -6,7 +6,7 @@ if [ -z "$AGENT_KEY" ]; then
 fi
 
 if [ -z "$GATEWAY_SERVER" ]; then
-  echo "AGENT_SERVER must be provided"
+  echo "GATEWAY_SERVER must be provided"
   exit 1
 fi
 
