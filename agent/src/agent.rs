@@ -147,7 +147,7 @@ impl Agent {
                 },
 
                 // A new inbound stream has been opened.
-                stream = connection.inbound.recv() => match stream {
+                stream = connection.inbound.recv(), if self.online => match stream {
                     None => {
                         log::debug!("connection to server lost");
                         self.online = false
@@ -217,7 +217,7 @@ impl Agent {
 
     /// Handle message from server.
     async fn on_message(&mut self, writer: &mut Writer, msg: Message<Server<'_>>) -> Result<Option<Connection>, Error> {
-        log::trace!(id = %msg.id, "received message data: {:?}", msg.data);
+        log::trace!(id = %msg.id, online = %self.online, data = ?msg.data, "received message");
 
         match msg.data {
             Some(Server::Accepted) => {
