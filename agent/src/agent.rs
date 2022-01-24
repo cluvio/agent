@@ -32,7 +32,8 @@ pub struct Agent {
     ping_state: PingState,
     streams: FuturesUnordered<JoinHandle<Result<(), Error>>>,
     tests: FuturesUnordered<JoinHandle<(Id, Option<ErrorCode>)>>,
-    drainage: SelectAll<BoxStream<'static, yamux::Stream>>
+    drainage: SelectAll<BoxStream<'static, yamux::Stream>>,
+    online: bool
 }
 
 /// Connection parts.
@@ -92,7 +93,8 @@ impl Agent {
                 let mut s = SelectAll::new();
                 s.push(futures::stream::pending().boxed());
                 s
-            }
+            },
+            online: false
         })
     }
 
@@ -124,7 +126,7 @@ impl Agent {
                         connection = self.reconnect(connection).await
                     }
                     Ok(None) => {
-                        log::warn!("connection to server lost, reconnecting ...");
+                        log::warn!("control channel to server closed, reconnecting ...");
                         connection = self.reconnect(connection).await
                     }
                     Ok(Some(m)) => match self.on_message(&mut connection.writer, m).await {
@@ -147,8 +149,8 @@ impl Agent {
                 // A new inbound stream has been opened.
                 stream = connection.inbound.recv() => match stream {
                     None => {
-                        log::warn!("connection to server lost, reconnecting ...");
-                        connection = self.reconnect(connection).await
+                        log::debug!("connection to server lost");
+                        self.online = false
                     }
                     Some(s) => {
                         log::debug!("new inbound stream");
@@ -222,7 +224,9 @@ impl Agent {
                 self.attempt = 0
             }
             Some(Server::Ping) => {
-                send(writer, Message::new(Client::Pong { re: msg.id })).await?;
+                if self.online {
+                    send(writer, Message::new(Client::Pong { re: msg.id })).await?;
+                }
             }
             Some(Server::Pong { re }) => {
                 if let PingState::Awaiting(p) = self.ping_state {
@@ -232,55 +236,59 @@ impl Agent {
                 }
             }
             Some(Server::Challenge { text }) =>
-                match decrypt(&self.config.secret_key, text.0) {
-                    Ok(plain) => {
-                        let data = Client::Response {
-                            re: msg.id,
-                            text: Cow::Borrowed(plain.as_ref().into())
-                        };
-                        send(writer, Message::new(data)).await?;
-                    }
-                    Err(e) => {
-                        log::warn!(id = %msg.id, "failed to decrypt challenge: {}", e);
-                        let data = Client::Error {
-                            re: msg.id,
-                            code: Some(ErrorCode::DecryptionFailed),
-                            msg: None
-                        };
-                        send(writer, Message::new(data)).await?;
+                if self.online {
+                    match decrypt(&self.config.secret_key, text.0) {
+                        Ok(plain) => {
+                            let data = Client::Response {
+                                re: msg.id,
+                                text: Cow::Borrowed(plain.as_ref().into())
+                            };
+                            send(writer, Message::new(data)).await?;
+                        }
+                        Err(e) => {
+                            log::warn!(id = %msg.id, "failed to decrypt challenge: {}", e);
+                            let data = Client::Error {
+                                re: msg.id,
+                                code: Some(ErrorCode::DecryptionFailed),
+                                msg: None
+                            };
+                            send(writer, Message::new(data)).await?;
+                        }
                     }
                 }
             Some(Server::Terminate { reason }) => {
                 log::error!(id = %msg.id, ?reason, "connection terminated by gateway");
                 return Err(Error::Terminated(reason))
             }
-            Some(Server::Test { addr }) => {
-                match stream::check_addr(addr, &self.config.allowed_addresses) {
-                    Err(code) => {
-                        let data = Client::Test { re: msg.id, code: Some(code) };
-                        send(writer, Message::new(data)).await?;
-                    }
-                    Ok(addr) => {
-                        let id = msg.id;
-                        let cf = self.config.clone();
-                        self.tests.push(spawn(async move {
-                            if let Err(e) = stream::connect(id, &cf, &addr).await {
-                                log::warn!(%id, "test connection failed: {}", e);
-                                (id, Some(ErrorCode::CouldNotConnect))
-                            } else {
-                                log::debug!(%id, "test connection suceeded");
-                                (id, None)
-                            }
-                        }))
+            Some(Server::Test { addr }) =>
+                if self.online {
+                    match stream::check_addr(addr, &self.config.allowed_addresses) {
+                        Err(code) => {
+                            let data = Client::Test { re: msg.id, code: Some(code) };
+                            send(writer, Message::new(data)).await?;
+                        }
+                        Ok(addr) => {
+                            let id = msg.id;
+                            let cf = self.config.clone();
+                            self.tests.push(spawn(async move {
+                                if let Err(e) = stream::connect(id, &cf, &addr).await {
+                                    log::warn!(%id, "test connection failed: {}", e);
+                                    (id, Some(ErrorCode::CouldNotConnect))
+                                } else {
+                                    log::debug!(%id, "test connection suceeded");
+                                    (id, None)
+                                }
+                            }))
+                        }
                     }
                 }
-            }
-            Some(Server::SwitchToNewConnection) => {
-                log::debug!(id = %msg.id, "switching to new connection and draining the existing one");
-                send(writer, Message::new(Client::SwitchingConnection { re: msg.id })).await?;
-                let c = self.connect().await;
-                return Ok(Some(c))
-            }
+            Some(Server::SwitchToNewConnection) =>
+                if self.online {
+                    log::debug!(id = %msg.id, "switching to new connection and draining the existing one");
+                    send(writer, Message::new(Client::SwitchingConnection { re: msg.id })).await?;
+                    let c = self.connect().await;
+                    return Ok(Some(c))
+                }
             Some(Server::Error { msg }) => {
                 log::error!(?msg, "server error")
             }
@@ -352,6 +360,7 @@ impl Agent {
                 Ok(conn) => {
                     log::info!("connected to server: {}:{}", host.as_str(), port);
                     self.ping_state = PingState::Idle;
+                    self.online = true;
                     return conn
                 }
                 Err(e) => {
@@ -370,6 +379,7 @@ impl Agent {
             log::warn!("error closing connection: {}", e)
         }
         drop(conn);
+        self.online = false;
         self.connect().await
     }
 }
