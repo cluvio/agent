@@ -126,7 +126,7 @@ impl Agent {
                         connection = self.reconnect(connection).await
                     }
                     Ok(None) => {
-                        log::warn!("control channel to server closed, reconnecting ...");
+                        log::warn!("control channel closed by server, reconnecting ...");
                         connection = self.reconnect(connection).await
                     }
                     Ok(Some(m)) => match self.on_message(&mut connection.writer, m).await {
