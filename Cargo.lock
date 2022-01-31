@@ -171,7 +171,7 @@ dependencies = [
  "futures",
  "humantime",
  "ipnet",
- "minicbor",
+ "minicbor 0.13.0",
  "minicbor-io",
  "protocol",
  "quickcheck",
@@ -529,6 +529,12 @@ name = "minicbor"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f87f3e31e61ba3695668b1de137268177e1f7e38743d5f6e811c50e7ce4c047b"
+
+[[package]]
+name = "minicbor"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c75adbf3b9509b2e5debc0d3bc4e1f44d9e86c821cace902bb80197798cd4f5a"
 dependencies = [
  "half",
  "minicbor-derive",
@@ -554,7 +560,7 @@ dependencies = [
  "futures-core",
  "futures-io",
  "futures-util",
- "minicbor",
+ "minicbor 0.12.1",
 ]
 
 [[package]]
@@ -718,7 +724,7 @@ dependencies = [
 name = "protocol"
 version = "0.1.0"
 dependencies = [
- "minicbor",
+ "minicbor 0.13.0",
  "nohash-hasher",
  "quickcheck",
  "rand_core 0.6.3",
@@ -912,7 +918,7 @@ version = "0.1.0"
 dependencies = [
  "blake2b_simd",
  "crypto_box",
- "minicbor",
+ "minicbor 0.13.0",
  "quickcheck",
  "rand_core 0.6.3",
 ]
@@ -1272,7 +1278,7 @@ dependencies = [
  "chacha20poly1305",
  "futures",
  "humantime",
- "minicbor",
+ "minicbor 0.13.0",
  "minicbor-io",
  "rand_core 0.6.3",
  "rustls-pemfile",
