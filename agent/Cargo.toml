@@ -40,7 +40,7 @@ features = ["env-filter", "json"]
 
 [dev-dependencies]
 quickcheck = "1.0.3"
-rand       = "0.8.4"
+rand       = "0.8.5"
 
 # Debian archive metadata
 
