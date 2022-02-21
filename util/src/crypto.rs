@@ -58,11 +58,12 @@ impl Encode for Nonce {
 
 impl<'b> Decode<'b> for Nonce {
     fn decode(d: &mut Decoder<'b>) -> Result<Self, decode::Error> {
+        let p = d.position();
         let b = d.bytes()?;
-        if b.len() != 24 {
-            return Err(decode::Error::Message("crypto::Nonce not 24 bytes"))
-        }
-        Ok(Nonce::from(<[u8; 24]>::try_from(b).expect("24 == 24")))
+        let a = <[u8; 24]>::try_from(b).map_err(|_| {
+            decode::Error::message("crypto::Nonce not 24 bytes").at(p)
+        })?;
+        Ok(Nonce::from(a))
     }
 }
 
