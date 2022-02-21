@@ -6,7 +6,7 @@ edition     = "2021"
 description = "Cluvio GmbH connection agent"
 
 [dependencies]
-config       = { version = "0.11", default-features = false, features = ["toml"] }
+config       = { version = "0.12", default-features = false, features = ["toml"] }
 directories  = "4.0.1"
 either       = "1.6"
 futures      = "0.3.13"
