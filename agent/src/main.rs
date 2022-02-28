@@ -37,10 +37,13 @@ async fn main() {
             .ok_or_else(|| concat!("see `", env!("CARGO_PKG_NAME"), " --help` for details").to_string())
             .unwrap_or_else(exit("config file not found"));
         log::info!(?path, "configuration");
-        let mut cfg = config::Config::default();
-        cfg.merge(config::File::from(path)).unwrap_or_else(exit("config"));
-        cfg.merge(config::Environment::with_prefix("CLUVIO_AGENT").separator("_")).unwrap_or_else(exit("config"));
-        cfg.try_into().unwrap_or_else(exit("config"))
+        config::Config::builder()
+            .add_source(config::File::from(path))
+            .add_source(config::Environment::with_prefix("CLUVIO_AGENT").separator("_"))
+            .build()
+            .unwrap_or_else(exit("config"))
+            .try_deserialize()
+            .unwrap_or_else(exit("config"))
     };
 
     let reason = Agent::new(cfg)
