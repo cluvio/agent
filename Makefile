@@ -89,6 +89,12 @@ build-agent-x86_64-windows: clean
 	(cd build && 7z.exe a ../dist/cluvio-agent-$(AGENT_VERSION)-x86_64-windows.zip cluvio-agent.exe)
 
 docker-agent-x86_64: build-agent-x86_64-linux
+ifndef DOCKER_HUB_USERNAME
+    $(error DOCKER_HUB_USERNAME is not set)
+endif
+ifndef DOCKER_HUB_ACCESS_TOKEN
+    $(error DOCKER_HUB_ACCESS_TOKEN is not set)
+endif
 	docker build -t cluvio/agent:$(AGENT_VERSION) .
 	docker tag cluvio/agent:$(AGENT_VERSION) cluvio/agent:$(AGENT_VERSION)
 	docker tag cluvio/agent:$(AGENT_VERSION) cluvio/agent:latest
