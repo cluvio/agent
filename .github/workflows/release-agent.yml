@@ -32,6 +32,9 @@ jobs:
     - name: Package agent (rpm).
       run: make rpm-agent-x86_64
 
+    - name: Package agent (docker).
+      run: make docker-agent-x86_64
+
     - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
     - uses: actions/upload-artifact@v2

@@ -1,4 +1,4 @@
-AGENT_VERSION = 0.2.0
+AGENT_VERSION := $(shell cargo metadata --format-version 1 | jq -r '.packages[] | select(.name == "cluvio-agent") | .version')
 
 .PHONY: \
     build-agent-aarch64-linux \
@@ -87,6 +87,13 @@ build-agent-x86_64-windows: clean
 	strip build/bin/cluvio-agent.exe
 	mv build/bin/cluvio-agent.exe build/cluvio-agent.exe
 	(cd build && 7z.exe a ../dist/cluvio-agent-$(AGENT_VERSION)-x86_64-windows.zip cluvio-agent.exe)
+
+docker-agent-x86_64: build-agent-x86_64-linux
+	docker build -t cluvio/agent:$(AGENT_VERSION) .
+	docker tag cluvio/agent:$(AGENT_VERSION) cluvio/agent:$(AGENT_VERSION)
+	docker tag cluvio/agent:$(AGENT_VERSION) cluvio/agent:latest
+	echo "${DOCKER_HUB_ACCESS_TOKEN}" | docker login --username $(DOCKER_HUB_USERNAME) --password-stdin
+	docker push --all-tags cluvio/agent
 
 deb-agent-x86_64: build-agent-x86_64-linux
 	cargo deb -p cluvio-agent --target=x86_64-unknown-linux-musl

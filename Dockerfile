@@ -1,8 +1,8 @@
-###########################################
-#  Dockerfile to build Cluvio agent image
-###########################################
+##############################################
+#  Dockerfile for an x86_64 linux agent image.
+##############################################
 
-FROM alpine:3.14
+FROM alpine:3.15
 
 MAINTAINER Cluvio <hi@cluvio.com>
 
