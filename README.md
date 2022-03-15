@@ -1,25 +1,27 @@
 # Cluvio Agent
 
-A Cluvio agent establishes connectivity between the Cluvio data centre and the user's
-database. It maintains a single connection to Cluvio (using multiplexing to enable the
-concurrent transfer of independent data streams) and creates connections to databases
-when necessary. It is an alternative to running an SSH server or allowing inbound
-connections to the database from the internet.
+A Cluvio agent establishes connectivity between the Cluvio servers and a user's
+database. Towards Cluvio, it maintains a single, multiplexed connection which enables
+the concurrent transfer of independent data streams. Towards a user's database, it
+creates connections as necessary. Running a Cluvio agent in front of a database is an
+alternative to running an SSH server or allowing inbound connections to the database
+from the internet.
 
-Each agent must be registered with a Cluvio account. It is identified with an ID, created
-as part of the registration. A single agent can provide access to multiple databases. It
-connects to Cluvio over TCP and TLS, verifying the authenticity of the server, and it
-authenticates itself to Cluvio as part of the connection establishment. Firewalls do not
-need to allow inbound connections, it is sufficient if the agent is able to create an
-outbound connection to Cluvio. Security aspects are discussed in more detail in
-[SECURITY.md](/SECURITY.md).
+Each Cluvio agent must be registered with a Cluvio account. To that end, each agent is identified by
+a unique ID, assigned when creating a new agent in the Cluvio application. A single agent can
+provide access to multiple databases. It connects to Cluvio over TCP with TLS, verifying the
+authenticity of the server, and it authenticates itself to Cluvio as part of the connection
+establishment. Firewalls do not need to allow inbound connections - it is sufficient if the agent is
+able to create outbound connections to Cluvio and to the databases. Security aspects are discussed
+in more detail in [SECURITY.md](/SECURITY.md).
 
 ## Configuration
 
-Before installing an agent a configuration file should be retrieved from Cluvio at
-https://app.cluvio.com/settings/datasources/new. An installed agent will attempt to find
-the configuration file named `cluvio-agent.toml` at various platform-dependent file system
-locations:
+To start an agent after installation, a configuration file is needed. This file is obtained from the
+Cluvio application as a download when creating a new agent in the UI.  On startup, if not explicitly
+specified via the `--config` option (more on the available options further below), an agent will
+attempt to find the configuration file named `cluvio-agent.toml` at various platform-dependent file
+system locations:
 
 ### Linux
 
@@ -40,8 +42,9 @@ locations:
 1. In `FOLDERID_RoamingAppData`, e.g. `C:\Users\JohnDoe\AppData\Roaming`
 2. Next to the installed executable, e.g. `C:\Program Files\Cluvio`
 
-*Please note that configuration files should not be shared between multiple agents.* If
-you want to run multiple agents, download a separate configuration for each installation.
+> **NOTE**: A configuration file can only be used by one running agent at a time.
+> The file contains a secret key that uniquely identifies the agent and the Cluvio
+> servers reject multiple connections from the same agent.
 
 ## Installation
 
@@ -77,7 +80,7 @@ be useful which is what `--json` provides.
 
 #### Linux
 
-On Linux, the RPM and DEB archives include a unit file for systemd. Installation enables the
+On Linux, the RPM and DEB archives include a unit file for `systemd`. Installation enables the
 agent, but does not yet start the service. The unit file can also be found at
 [scripts/linux/cluvio-agent.service](/scripts/linux/cluvio-agent.service). Once the
 configuration has been retrieved from Cluvio, the usual `systemctl` commands can be used to
@@ -86,7 +89,7 @@ be seen via `journalctl`, e.g. `journalctl -u cluvio-agent.service`.
 
 #### MacOS
 
-If [homebrew][1] is used form installation, the agent can be managed with the `services`
+If [homebrew][1] is used for installation, the agent can be managed with the `services`
 subcommand, e.g. `brew services start cluvio-agent`.
 
 [1]: https://brew.sh/
