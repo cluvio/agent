@@ -9,6 +9,9 @@ jobs:
   check-release:
     runs-on: ubuntu-latest
     steps:
+    - name: Checkout repository.
+      uses: actions/checkout@v2
+
     - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
     - name: Check if release exists.
