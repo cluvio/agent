@@ -12,6 +12,14 @@ jobs:
     - name: Checkout repository.
       uses: actions/checkout@v2
 
+    - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
+
+    - name: Check if release exists.
+      shell: bash
+      run: |
+        gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
+        ! gh release view "v${{ env.AGENT_VERSION }}" > /dev/null 2>&1
+
     - name: Install MUSL
       run: |
         sudo apt-get update
@@ -37,8 +45,6 @@ jobs:
       env:
         DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
         DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-
-    - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
     - uses: actions/upload-artifact@v2
       with:
@@ -263,5 +269,5 @@ jobs:
       run: |
         (cd dist && sha256sum *.* > CHECKSUMS)
         gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
-        gh release create -d -t "v${{ env.AGENT_VERSION }}" -F CHANGELOG.md "v${{ env.AGENT_VERSION }}" dist/*
+        gh release create -d -t "v${{ env.AGENT_VERSION }}" -F changelog/v${{env.AGENT_VERSION}}.md "v${{ env.AGENT_VERSION }}" dist/*
 
