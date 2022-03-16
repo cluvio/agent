@@ -20,6 +20,10 @@ jobs:
         gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
         ! gh release view "v${{ env.AGENT_VERSION }}" > /dev/null 2>&1
 
+    - name: Check if changelog file exists.
+      shell: bash
+      run: test -f changelog/v${{ env.AGENT_VERSION }}.md
+
   build-x86_64-linux:
     runs-on: ubuntu-latest
     needs:
@@ -287,5 +291,5 @@ jobs:
       run: |
         (cd dist && sha256sum *.* > CHECKSUMS)
         gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
-        gh release create -d -t "v${{ env.AGENT_VERSION }}" -F changelog/v${{env.AGENT_VERSION}}.md "v${{ env.AGENT_VERSION }}" dist/*
+        gh release create -d -t "v${{ env.AGENT_VERSION }}" -F changelog/v${{ env.AGENT_VERSION }}.md "v${{ env.AGENT_VERSION }}" dist/*
 
