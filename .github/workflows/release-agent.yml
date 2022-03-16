@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository.
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
@@ -30,7 +30,7 @@ jobs:
       - check-release
     steps:
     - name: Checkout repository.
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Install MUSL
       run: |
@@ -84,7 +84,7 @@ jobs:
       - check-release
     steps:
     - name: Checkout repository.
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Install MUSL
       run: |
@@ -132,7 +132,7 @@ jobs:
       - check-release
     steps:
     - name: Checkout repository.
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Install Apple Darwin target
       run: rustup target add x86_64-apple-darwin
@@ -166,7 +166,7 @@ jobs:
       - check-release
     steps:
     - name: Checkout repository.
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Install Apple Darwin target
       run: rustup target add aarch64-apple-darwin
@@ -200,7 +200,7 @@ jobs:
       - check-release
     steps:
     - name: Checkout repository.
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Install Windows target
       run: rustup target add x86_64-pc-windows-msvc
@@ -227,7 +227,7 @@ jobs:
       - build-x86_64-windows
     steps:
     - name: Checkout repository.
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
