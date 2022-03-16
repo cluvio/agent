@@ -9,6 +9,8 @@ jobs:
   check-release:
     runs-on: ubuntu-latest
     steps:
+    - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
+
     - name: Check if release exists.
       shell: bash
       run: |
@@ -22,8 +24,6 @@ jobs:
     steps:
     - name: Checkout repository.
       uses: actions/checkout@v2
-
-    - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
     - name: Install MUSL
       run: |
@@ -50,6 +50,8 @@ jobs:
       env:
         DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
         DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+    - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
     - uses: actions/upload-artifact@v2
       with:
