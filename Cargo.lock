@@ -168,7 +168,7 @@ dependencies = [
 
 [[package]]
 name = "cluvio-agent"
-version = "0.2.0"
+version = "0.2.2"
 dependencies = [
  "config",
  "directories",
@@ -228,9 +228,9 @@ dependencies = [
 
 [[package]]
 name = "crypto_box"
-version = "0.7.1"
+version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5c2b974d4124d78e9d061e06ff1d3a2aaef9d925b5f23bb3e0b9410240279f16"
+checksum = "41d2bcbd5e4fc3ad3de2d0e75509f870a6fa9f488e0e2c9a8ce49721a52efc4e"
 dependencies = [
  "chacha20",
  "chacha20poly1305",
