@@ -53,7 +53,7 @@ jobs:
       run: make rpm-agent-x86_64
 
     - name: Package agent (docker).
-      run: make docker-agent-x86_64
+      run: make docker-agent-x86_64-linux
       env:
         DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
         DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
@@ -105,6 +105,12 @@ jobs:
 
     - name: Package agent (rpm).
       run: make rpm-agent-aarch64
+
+    - name: Package agent (docker).
+      run: make docker-agent-aarch64-linux
+      env:
+        DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+        DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
     - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
@@ -292,4 +298,3 @@ jobs:
         (cd dist && sha256sum *.* > CHECKSUMS)
         gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
         gh release create -d -t "v${{ env.AGENT_VERSION }}" -F changelog/v${{ env.AGENT_VERSION }}.md "v${{ env.AGENT_VERSION }}" dist/*
-
