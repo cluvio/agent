@@ -104,6 +104,7 @@ docker-agent-aarch64-linux: build-agent-aarch64-linux
 	docker tag cluvio/agent:$(AGENT_VERSION) cluvio/agent:$(AGENT_VERSION)
 	docker tag cluvio/agent:$(AGENT_VERSION) cluvio/agent:latest
 	@echo "${DOCKER_HUB_ACCESS_TOKEN}" | docker login --username $(DOCKER_HUB_USERNAME) --password-stdin
+	docker push --all-tags cluvio/agent
 
 deb-agent-x86_64: build-agent-x86_64-linux
 	cargo deb -p cluvio-agent --target=x86_64-unknown-linux-musl

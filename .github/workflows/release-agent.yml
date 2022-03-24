@@ -86,10 +86,10 @@ jobs:
     - name: Checkout repository.
       uses: actions/checkout@v3
 
-    - name: Install MUSL
+    - name: Install MUSL and other apt dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y musl-dev musl-tools gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu
+        sudo apt-get install -y musl-dev musl-tools gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu qemu-user-static binfmt-support
 
     - name: Install MUSL target
       run: rustup target add aarch64-unknown-linux-musl
