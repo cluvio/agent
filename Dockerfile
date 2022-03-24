@@ -1,8 +1,9 @@
-##############################################
-#  Dockerfile for an x86_64 linux agent image.
-##############################################
+####################################################
+#  Dockerfile for an x86_64/arm64 linux agent image.
+####################################################
 
-FROM alpine:3.15
+ARG ARCH=
+FROM ${ARCH}alpine:3.15
 
 MAINTAINER Cluvio <hi@cluvio.com>
 

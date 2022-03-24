@@ -298,3 +298,9 @@ jobs:
         (cd dist && sha256sum *.* > CHECKSUMS)
         gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
         gh release create -d -t "v${{ env.AGENT_VERSION }}" -F changelog/v${{ env.AGENT_VERSION }}.md "v${{ env.AGENT_VERSION }}" dist/*
+
+    - name: Release on docker hub.
+      run: make docker-agent-release
+      env:
+        DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+        DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
