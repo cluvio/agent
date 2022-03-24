@@ -100,7 +100,7 @@ docker-agent-x86_64-linux: build-agent-x86_64-linux
 docker-agent-aarch64-linux: build-agent-aarch64-linux
 	test -n "$(DOCKER_HUB_USERNAME)" # $$DOCKER_HUB_USERNAME
 	test -n "$(DOCKER_HUB_ACCESS_TOKEN)" # $$DOCKER_HUB_ACCESS_TOKEN
-	docker buildx --version
+	docker buildx version
 	docker buildx --platform linux/arm64 -t cluvio/agent:$(AGENT_VERSION) .
 	docker tag cluvio/agent:$(AGENT_VERSION) cluvio/agent:$(AGENT_VERSION)
 	docker tag cluvio/agent:$(AGENT_VERSION) cluvio/agent:latest
