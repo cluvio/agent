@@ -89,16 +89,23 @@ build-agent-x86_64-windows: clean
 	(cd build && 7z.exe a ../dist/cluvio-agent-$(AGENT_VERSION)-x86_64-windows.zip cluvio-agent.exe)
 
 docker-agent-x86_64-linux: build-agent-x86_64-linux
+	test -n "$(DOCKER_HUB_USERNAME)" # $$DOCKER_HUB_USERNAME
+	test -n "$(DOCKER_HUB_ACCESS_TOKEN)" # $$DOCKER_HUB_ACCESS_TOKEN
+	@echo "${DOCKER_HUB_ACCESS_TOKEN}" | docker login --username $(DOCKER_HUB_USERNAME) --password-stdin
 	docker build -t cluvio/agent:x86_64-$(AGENT_VERSION) .
+	docker push --all-tags cluvio/agent
 
 docker-agent-aarch64-linux: build-agent-aarch64-linux
+	test -n "$(DOCKER_HUB_USERNAME)" # $$DOCKER_HUB_USERNAME
+	test -n "$(DOCKER_HUB_ACCESS_TOKEN)" # $$DOCKER_HUB_ACCESS_TOKEN
+	@echo "${DOCKER_HUB_ACCESS_TOKEN}" | docker login --username $(DOCKER_HUB_USERNAME) --password-stdin
 	docker build --build-arg ARCH=arm64v8/ -t cluvio/agent:arm64-$(AGENT_VERSION) .
+	docker push --all-tags cluvio/agent
 
 docker-agent-release:
 	test -n "$(DOCKER_HUB_USERNAME)" # $$DOCKER_HUB_USERNAME
 	test -n "$(DOCKER_HUB_ACCESS_TOKEN)" # $$DOCKER_HUB_ACCESS_TOKEN
 	@echo "${DOCKER_HUB_ACCESS_TOKEN}" | docker login --username $(DOCKER_HUB_USERNAME) --password-stdin
-	docker push --all-tags cluvio/agent
 	docker manifest create cluvio/agent:$(AGENT_VERSION) \
 		--amend cluvio/agent:arm64-$(AGENT_VERSION) \
 		--amend cluvio/agent:x86_64-$(AGENT_VERSION)
