@@ -92,14 +92,14 @@ docker-agent-x86_64-linux: build-agent-x86_64-linux
 	test -n "$(DOCKER_HUB_USERNAME)" # $$DOCKER_HUB_USERNAME
 	test -n "$(DOCKER_HUB_ACCESS_TOKEN)" # $$DOCKER_HUB_ACCESS_TOKEN
 	@echo "${DOCKER_HUB_ACCESS_TOKEN}" | docker login --username $(DOCKER_HUB_USERNAME) --password-stdin
-	docker build -t cluvio/agent:x86_64-$(AGENT_VERSION) .
+	docker build -t cluvio/agent:$(AGENT_VERSION)-x86_64 .
 	docker push --all-tags cluvio/agent
 
 docker-agent-aarch64-linux: build-agent-aarch64-linux
 	test -n "$(DOCKER_HUB_USERNAME)" # $$DOCKER_HUB_USERNAME
 	test -n "$(DOCKER_HUB_ACCESS_TOKEN)" # $$DOCKER_HUB_ACCESS_TOKEN
 	@echo "${DOCKER_HUB_ACCESS_TOKEN}" | docker login --username $(DOCKER_HUB_USERNAME) --password-stdin
-	docker build --build-arg ARCH=arm64v8/ -t cluvio/agent:arm64-$(AGENT_VERSION) .
+	docker build --build-arg ARCH=arm64v8/ -t cluvio/agent:$(AGENT_VERSION)-arm64 .
 	docker push --all-tags cluvio/agent
 
 docker-agent-release:
@@ -107,16 +107,16 @@ docker-agent-release:
 	test -n "$(DOCKER_HUB_ACCESS_TOKEN)" # $$DOCKER_HUB_ACCESS_TOKEN
 	@echo "${DOCKER_HUB_ACCESS_TOKEN}" | docker login --username $(DOCKER_HUB_USERNAME) --password-stdin
 	docker manifest create cluvio/agent:$(AGENT_VERSION) \
-		--amend cluvio/agent:arm64-$(AGENT_VERSION) \
-		--amend cluvio/agent:x86_64-$(AGENT_VERSION)
-	docker manifest annotate cluvio/agent:$(AGENT_VERSION) cluvio/agent:x86_64-$(AGENT_VERSION) --arch amd64
-	docker manifest annotate cluvio/agent:$(AGENT_VERSION) cluvio/agent:arm64-$(AGENT_VERSION) --arch arm64 --variant v8
+		--amend cluvio/agent:$(AGENT_VERSION)-arm64 \
+		--amend cluvio/agent:$(AGENT_VERSION)-x86_64
+	docker manifest annotate cluvio/agent:$(AGENT_VERSION) cluvio/agent:$(AGENT_VERSION)-x86_64 --arch amd64
+	docker manifest annotate cluvio/agent:$(AGENT_VERSION) cluvio/agent:$(AGENT_VERSION)-arm64 --arch arm64 --variant v8
 	docker manifest push cluvio/agent:$(AGENT_VERSION)
 	docker manifest create cluvio/agent:latest \
-		--amend cluvio/agent:arm64-$(AGENT_VERSION) \
-		--amend cluvio/agent:x86_64-$(AGENT_VERSION)
-	docker manifest annotate cluvio/agent:latest cluvio/agent:x86_64-$(AGENT_VERSION) --arch amd64
-	docker manifest annotate cluvio/agent:latest cluvio/agent:arm64-$(AGENT_VERSION) --arch arm64 --variant v8
+		--amend cluvio/agent:$(AGENT_VERSION)-arm64 \
+		--amend cluvio/agent:$(AGENT_VERSION)-x86_64
+	docker manifest annotate cluvio/agent:latest cluvio/agent:$(AGENT_VERSION)-x86_64 --arch amd64
+	docker manifest annotate cluvio/agent:latest cluvio/agent:$(AGENT_VERSION)-arm64 --arch arm64 --variant v8
 	docker manifest push cluvio/agent:latest
 
 deb-agent-x86_64: build-agent-x86_64-linux
