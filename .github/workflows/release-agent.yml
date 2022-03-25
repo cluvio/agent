@@ -53,7 +53,7 @@ jobs:
       run: make rpm-agent-x86_64
 
     - name: Package agent (docker).
-      run: make docker-agent-x86_64
+      run: make docker-agent-x86_64-linux
       env:
         DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
         DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
@@ -86,10 +86,10 @@ jobs:
     - name: Checkout repository.
       uses: actions/checkout@v3
 
-    - name: Install MUSL
+    - name: Install MUSL and other apt dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y musl-dev musl-tools gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu
+        sudo apt-get install -y musl-dev musl-tools gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu qemu-user-static binfmt-support
 
     - name: Install MUSL target
       run: rustup target add aarch64-unknown-linux-musl
@@ -105,6 +105,12 @@ jobs:
 
     - name: Package agent (rpm).
       run: make rpm-agent-aarch64
+
+    - name: Package agent (docker).
+      run: make docker-agent-aarch64-linux
+      env:
+        DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+        DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
     - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
@@ -293,3 +299,8 @@ jobs:
         gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
         gh release create -d -t "v${{ env.AGENT_VERSION }}" -F changelog/v${{ env.AGENT_VERSION }}.md "v${{ env.AGENT_VERSION }}" dist/*
 
+    - name: Release on docker hub.
+      run: make docker-agent-release
+      env:
+        DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+        DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}

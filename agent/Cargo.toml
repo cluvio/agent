@@ -1,6 +1,6 @@
 [package]
 name        = "cluvio-agent"
-version     = "0.2.2"
+version     = "0.2.3"
 license     = "MIT"
 edition     = "2021"
 description = "Cluvio GmbH connection agent"
@@ -68,4 +68,3 @@ source = "../scripts/linux/cluvio-agent.service"
 dest   = "/lib/systemd/system/cluvio-agent.service"
 mode   = "644"
 config = true
-

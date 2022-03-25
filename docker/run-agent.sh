@@ -18,7 +18,7 @@ if [ -z "$AGENT_GATEWAY_HOST" ]; then
   exit 1
 fi
 
-cat << EOF >> /opt/cluvio/cluvio-agent.toml
+cat << EOF > /opt/cluvio/cluvio-agent.toml
 secret-key = "$AGENT_SECRET_KEY"
 
 [server]
