@@ -77,6 +77,16 @@ enum PingState {
     Awaiting(Id)
 }
 
+/// Delay strategy for connection attempts.
+enum Delay {
+    /// Apply exponential backoff based on counting the connection attempts.
+    ///
+    /// The first attempt has no delay.
+    ExpBackoff,
+    /// A fixed delay prior to the connection attempt.
+    Fixed(Duration)
+}
+
 impl Agent {
     pub fn new(cfg: Config) -> Result<Self, Error> {
         let client = tls::Client::new(&cfg)?;
@@ -107,7 +117,7 @@ impl Agent {
     /// This method will only return if the gateway terminates the agent with
     /// a reason (which is returned to the caller).
     pub async fn go(mut self) -> Reason {
-        let mut connection = self.connect().await;
+        let mut connection = self.connect(Delay::ExpBackoff).await;
 
         log::info! {
             agent   = %self.id,
@@ -123,17 +133,25 @@ impl Agent {
                 message = recv(&mut connection.reader) => match message {
                     Err(e) => {
                         log::error!("error reading from server: {}", e);
-                        connection = self.reconnect(connection).await
+                        connection = self.reconnect(connection, Delay::ExpBackoff).await
                     }
                     Ok(None) => {
                         log::warn!("control channel closed by server, reconnecting ...");
-                        connection = self.reconnect(connection).await
+                        connection = self.reconnect(connection, Delay::ExpBackoff).await
                     }
                     Ok(Some(m)) => match self.on_message(&mut connection.writer, m).await {
-                        Err(Error::Terminated(reason)) => return reason,
+                        Err(Error::Terminated(Reason::Disabled)) => {
+                            // Being disabled is no reason for the agent to give up: Retry in
+                            // fixed intervals.
+                            connection = self.reconnect(connection, Delay::Fixed(Duration::from_secs(5))).await
+                        }
+                        Err(Error::Terminated(reason)) =>
+                            // Other reasons for connection termination are permanent, thus
+                            // terminate the agent.
+                            return reason,
                         Err(e) => {
                             log::error!("failed to answer server message: {}", e);
-                            connection = self.reconnect(connection).await
+                            connection = self.reconnect(connection, Delay::ExpBackoff).await
                         }
                         Ok(Some(mut conn)) => {
                             mem::swap(&mut connection, &mut conn);
@@ -179,7 +197,7 @@ impl Agent {
                         let data = Client::Test { re, code };
                         if let Err(e) = send(&mut connection.writer, Message::new(data)).await {
                             log::warn!(id = %re, "error sending message to server: {}", e);
-                            connection = self.reconnect(connection).await
+                            connection = self.reconnect(connection, Delay::ExpBackoff).await
                         }
                     }
                 },
@@ -201,14 +219,14 @@ impl Agent {
                         let msg = Message::new(Client::Ping);
                         if let Err(e) = send(&mut connection.writer, &msg).await {
                             log::warn!("error sending message to server: {}", e);
-                            connection = self.reconnect(connection).await
+                            connection = self.reconnect(connection, Delay::ExpBackoff).await
                         } else {
                             self.ping_state = PingState::Awaiting(msg.id)
                         }
                     }
                     PingState::Awaiting(id) => {
                         log::warn!(%id, "no pong from server");
-                        connection = self.reconnect(connection).await
+                        connection = self.reconnect(connection, Delay::ExpBackoff).await
                     }
                 }
             }
@@ -286,7 +304,7 @@ impl Agent {
                 if self.online {
                     log::debug!(id = %msg.id, "switching to new connection and draining the existing one");
                     send(writer, Message::new(Client::SwitchingConnection { re: msg.id })).await?;
-                    let c = self.connect().await;
+                    let c = self.connect(Delay::ExpBackoff).await;
                     return Ok(Some(c))
                 }
             Some(Server::Error { msg }) => {
@@ -300,7 +318,7 @@ impl Agent {
     }
 
     /// Connect to server (with exponential backoff between failures).
-    async fn connect(&mut self) -> Connection {
+    async fn connect(&mut self, delay: Delay) -> Connection {
         async fn try_connect(client: &tls::Client, version: &Version, cfg: &Config) -> Result<Connection, Error> {
             let hostname = &cfg.server.host;
             let host_str = hostname.as_str();
@@ -345,16 +363,26 @@ impl Agent {
                 inbound: rx
             })
         }
+
         let host = &self.config.server.host;
         let port = self.config.server.port;
+
         loop {
-            if self.attempt > 0 {
-                let d = Duration::from_secs(2u64.pow(self.attempt.into()));
-                log::info!("waiting {} before connecting ...", format_duration(d));
-                sleep(d).await
-            }
-            if self.attempt < 6 {
-                self.attempt += 1
+            match delay {
+                Delay::Fixed(d) => {
+                    log::info!("waiting {} before connecting ...", format_duration(d));
+                    sleep(d).await
+                }
+                Delay::ExpBackoff => {
+                    if self.attempt > 0 {
+                        let d = Duration::from_secs(2u64.pow(self.attempt.into()));
+                        log::info!("waiting {} before connecting ...", format_duration(d));
+                        sleep(d).await
+                    }
+                    if self.attempt < 6 {
+                        self.attempt += 1
+                    }
+                }
             }
             match try_connect(&self.client, &self.version, &self.config).await {
                 Ok(conn) => {
@@ -374,13 +402,13 @@ impl Agent {
     ///
     /// We consume the existing reader and writer to trigger an immediate
     /// close of the current connection.
-    async fn reconnect(&mut self, mut conn: Connection) -> Connection {
+    async fn reconnect(&mut self, mut conn: Connection, delay: Delay) -> Connection {
         if let Err(e) = timeout(Duration::from_secs(5), conn.ctrl.close()).await {
             log::warn!("error closing connection: {}", e)
         }
         drop(conn);
         self.online = false;
-        self.connect().await
+        self.connect(delay).await
     }
 }
 

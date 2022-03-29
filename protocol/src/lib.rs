@@ -100,7 +100,7 @@ impl fmt::Debug for Server<'_> {
     }
 }
 
-/// Payload of a client message.
+/// Payload of a client control message.
 #[derive(Decode, Encode)]
 pub enum Client<'a> {
     /// Initial client message.
@@ -119,7 +119,7 @@ pub enum Client<'a> {
         #[n(0)] re: Id
     },
 
-    /// Answer to a previously received decrypt message.
+    /// Answer to a previously received authentication challenge.
     ///
     /// Contains the decrypted plaintext value.
     #[n(3)] Response {
@@ -286,18 +286,30 @@ impl fmt::Display for ErrorCode {
     }
 }
 
-/// Possible reasons for termination.
+/// Possible reasons for connection termination.
 #[derive(Copy, Clone, Debug, Decode, Encode, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum Reason {
-    /// The agent is not authentic.
+    /// The agent failed to authenticate itself.
     ///
-    /// I.e. it could not prove ownership of the claimed private key.
+    /// The agent failed to prove ownership of the private key corresponding
+    /// to the presented public key. Further connection attempts with the same
+    /// public key are not permissible.
     #[n(0)] Unauthenticated,
     /// The agent is not authorized to connect.
+    ///
+    /// The agent's identity is not associated with a Cluvio organization.
+    /// Further connection attempts with the same public key are not
+    /// permissible.
     #[n(1)] Unauthorized,
     /// The agent version is not supported.
-    #[n(2)] UnsupportedVersion
+    ///
+    /// Further connection attempts with the same version are not permissible.
+    #[n(2)] UnsupportedVersion,
+    /// The agent is disabled.
+    ///
+    /// This is usually a temporary condition and further connection attempts are warranted.
+    #[n(3)] Disabled
 }
 
 impl fmt::Display for Reason {
@@ -305,7 +317,8 @@ impl fmt::Display for Reason {
         match self {
             Reason::Unauthenticated    => f.write_str("unauthenticated agent"),
             Reason::Unauthorized       => f.write_str("unauthorized agent"),
-            Reason::UnsupportedVersion => f.write_str("unsupported agent version")
+            Reason::UnsupportedVersion => f.write_str("unsupported agent version"),
+            Reason::Disabled           => f.write_str("agent disabled")
         }
     }
 }
