@@ -308,8 +308,7 @@ pub enum Reason {
     #[n(2)] UnsupportedVersion,
     /// The agent is disabled.
     ///
-    /// This is usually a temporary condition and further connection attempts
-    /// with exponential backoff are warranted.
+    /// This is usually a temporary condition and further connection attempts are warranted.
     #[n(3)] Disabled
 }
 
