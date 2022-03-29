@@ -19,7 +19,7 @@ jobs:
       run: rustup target add x86_64-unknown-linux-musl
 
     - name: Restore cargo directories from cache.
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: |
           ~/.cargo/registry
@@ -27,7 +27,7 @@ jobs:
         key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
     - name: Restore cargo target directory from cache.
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: target
         key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
