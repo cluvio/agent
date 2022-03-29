@@ -368,8 +368,6 @@ impl Agent {
         let port = self.config.server.port;
 
         loop {
-            // If given a specific delay, it takes precedence over the attempt-based
-            // backoff delay.
             match delay {
                 Delay::Fixed(d) => {
                     log::info!("waiting {} before connecting ...", format_duration(d));
