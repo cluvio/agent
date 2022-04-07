@@ -1,6 +1,6 @@
 [package]
 name        = "cluvio-agent"
-version     = "0.2.4"
+version     = "1.0.0"
 license     = "MIT"
 edition     = "2021"
 description = "Cluvio GmbH connection agent"
