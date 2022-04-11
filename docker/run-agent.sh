@@ -3,8 +3,8 @@
 # Start script for an agent inside a linux docker container.
 #
 # The script expects the environment variables `AGENT_SECRET_KEY` and
-# `AGENT_GATEWAY_HOST` to be set and renders a proper TOML configuration
-# file inside the container before starting the agent.
+# `LOCATION` (or `AGENT_GATEWAY_HOST`) to be set and renders a proper
+# TOML configuration file inside the container before starting the agent.
 
 set -e
 
@@ -13,8 +13,19 @@ if [ -z "$AGENT_SECRET_KEY" ]; then
   exit 1
 fi
 
+if [ -n "$LOCATION" ]; then
+  if [ "$LOCATION" = "eu" ]; then
+    AGENT_GATEWAY_HOST="gateway.eu.cluvio.com"
+  elif [ "$LOCATION" = "us" ]; then
+    AGENT_GATEWAY_HOST="gateway.us.cluvio.com"
+  else
+    echo "Invalid location: $LOCATION"
+    exit 1
+  fi
+fi
+
 if [ -z "$AGENT_GATEWAY_HOST" ]; then
-  echo "AGENT_GATEWAY_HOST must be set"
+  echo "LOCATION or AGENT_GATEWAY_HOST must be set"
   exit 1
 fi
 
