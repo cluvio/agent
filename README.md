@@ -54,7 +54,7 @@ https://github.com/cluvio/agent/releases.
 ### MacOS
 
 For users of [homebrew][1] a custom tap is available at https://github.com/cluvio/homebrew-tools.
-The agent can be installed with `brew install cluvio/homebrew-tools/cluvio-agent`.
+The agent can be installed with `brew install cluvio/tools/cluvio-agent`.
 
 ## Running an agent
 
