@@ -10,7 +10,7 @@ config       = { version = "0.13", default-features = false, features = ["toml"]
 directories  = "4.0.1"
 either       = "1.6"
 futures      = "0.3.13"
-ipnet        = { version = "2.4", features = ["serde"] }
+ipnet        = { version = "2.5", features = ["serde"] }
 humantime    = "2.1"
 log          = { version = "0.1.25", package = "tracing" }
 minicbor-io  = { version = "0.10.0", features = ["async-io"] }
