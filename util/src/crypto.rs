@@ -50,14 +50,14 @@ impl From<[u8; 24]> for Nonce {
     }
 }
 
-impl Encode for Nonce {
-    fn encode<W: Write>(&self, e: &mut Encoder<W>) -> Result<(), encode::Error<W::Error>> {
+impl<C> Encode<C> for Nonce {
+    fn encode<W: Write>(&self, e: &mut Encoder<W>, _: &mut C) -> Result<(), encode::Error<W::Error>> {
         e.bytes(&self.0)?.ok()
     }
 }
 
-impl<'b> Decode<'b> for Nonce {
-    fn decode(d: &mut Decoder<'b>) -> Result<Self, decode::Error> {
+impl<'b, C> Decode<'b, C> for Nonce {
+    fn decode(d: &mut Decoder<'b>, _: &mut C) -> Result<Self, decode::Error> {
         let p = d.position();
         let b = d.bytes()?;
         let a = <[u8; 24]>::try_from(b).map_err(|_| {
