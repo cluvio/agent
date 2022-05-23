@@ -35,6 +35,3 @@ jobs:
     - name: Test workspace.
       run: cargo test --all --all-features
 
-    - name: Build agent.
-      run: make build-agent-x86_64-linux
-
