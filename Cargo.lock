@@ -174,7 +174,7 @@ dependencies = [
 
 [[package]]
 name = "cluvio-agent"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "config",
  "directories",
@@ -517,9 +517,9 @@ checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
 
 [[package]]
 name = "minicbor"
-version = "0.16.0"
+version = "0.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "08de72a57f15d959ab3a3b73fc94572eb954bfcfeb3809cf83cc1bd7d0aa774b"
+checksum = "fbd8e31644139f4b7d5c315197657b8853d8e63f08556f2d10cb95a0917cacb3"
 dependencies = [
  "half",
  "minicbor-derive",
@@ -527,9 +527,9 @@ dependencies = [
 
 [[package]]
 name = "minicbor-derive"
-version = "0.10.0"
+version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "66dd6ff7dbe1a10938f8b72c6d0dd81c28fc68283aa79d7ba97c99a96a8e5823"
+checksum = "6469e7a9210851f16c8f93bcab3a42fb44f3ea1518c4b527808d88efebf7ce6d"
 dependencies = [
  "proc-macro2",
  "quote",
