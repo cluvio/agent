@@ -20,7 +20,7 @@ sealed-boxes = { path = "../sealed-boxes" }
 serde        = { version = "1.0.125", features = ["derive"] }
 socket2      = { version = "0.4.4", features = ["all"] }
 structopt    = "0.3.21"
-thiserror    = "1.0.24"
+thiserror    = "1.0.33"
 tokio-rustls = { version = "0.23", default-features = false, features = ["logging"] }
 tokio-util   = { version = "0.7.3", features = ["compat"] }
 toml         = "0.5.9"
