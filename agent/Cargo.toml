@@ -18,7 +18,7 @@ protocol     = { path = "../protocol" }
 scopeguard   = "1.1.0"
 sealed-boxes = { path = "../sealed-boxes" }
 serde        = { version = "1.0.125", features = ["derive"] }
-socket2      = { version = "0.4.4", features = ["all"] }
+socket2      = { version = "0.4.7", features = ["all"] }
 structopt    = "0.3.21"
 thiserror    = "1.0.24"
 tokio-rustls = { version = "0.23", default-features = false, features = ["logging"] }
