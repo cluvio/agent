@@ -1,5 +1,5 @@
 use chacha20poly1305::XChaCha20Poly1305;
-use chacha20poly1305::aead::{AeadInPlace, Error, NewAead};
+use chacha20poly1305::aead::{AeadInPlace, Error, KeyInit};
 use minicbor::{Decode, Encode};
 use minicbor::decode::{self, Decoder};
 use minicbor::encode::{self, Encoder, Write};
