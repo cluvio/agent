@@ -8,7 +8,7 @@ edition = "2021"
 sealed-boxes  = { path = "../sealed-boxes" }
 minicbor      = { version = "0.18.0", features = ["derive", "std", "half"] }
 nohash-hasher = "0.2"
-rand_core     = { version = "0.6.2", features = ["getrandom"] }
+rand_core     = { version = "0.6.4", features = ["getrandom"] }
 serde         = { version = "1.0.125", features = ["derive"] }
 util          = { path = "../util" }
 
