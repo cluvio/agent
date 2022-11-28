@@ -3,7 +3,7 @@
 ####################################################
 
 ARG ARCH=
-FROM ${ARCH}alpine:3.15
+FROM ${ARCH}alpine:3.17
 
 MAINTAINER Cluvio <hi@cluvio.com>
 
