@@ -37,7 +37,7 @@ security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$keychain
 security find-identity
 
 # Codesign the executable with hardened runtime (--options runtime)
-/usr/bin/codesign --force --options runtime -s "$MACOS_DEV_IDENTITY" "$executable" -v
+/usr/bin/codesign --timestamp --force --options runtime -s "$MACOS_DEV_IDENTITY" "$executable" -v
 
 # Create disk image
 srcdir=$(mktemp -d -t tmp.XXXXXXXXXX)
@@ -45,6 +45,6 @@ cp "$executable" "$srcdir"
 hdiutil create -volname "$name" -srcfolder "$srcdir" -ov -format UDZO "${dmg_name}.dmg"
 
 # Codesign the disk image
-/usr/bin/codesign --force --options runtime -s "$MACOS_DEV_IDENTITY" "${dmg_name}.dmg" -v
+/usr/bin/codesign --timestamp --force --options runtime -s "$MACOS_DEV_IDENTITY" "${dmg_name}.dmg" -v
 
 rm -rf "$srcdir"
