@@ -5,12 +5,12 @@ license = "MIT"
 edition = "2021"
 
 [dependencies]
-base64         = "0.13.0"
+base64         = "0.21.0"
 humantime      = "2.1"
 futures        = "0.3.13"
 log            = { version = "0.1.25", package = "tracing" }
-minicbor       = { version = "0.18.0", features = ["derive", "std", "half"] }
-minicbor-io    = { version = "0.13.0", features = ["async-io"] }
+minicbor       = { version = "0.19.0", features = ["derive", "std", "half"] }
+minicbor-io    = { version = "0.14.0", features = ["async-io"] }
 rand_core      = "0.6.2"
 rustls-pemfile = "1.0.0"
 sealed-boxes   = { path = "../sealed-boxes" }

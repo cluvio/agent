@@ -10,10 +10,10 @@ config       = { version = "0.13", default-features = false, features = ["toml"]
 directories  = "4.0.1"
 either       = "1.7"
 futures      = "0.3.13"
-ipnet        = { version = "2.5", features = ["serde"] }
+ipnet        = { version = "2.7", features = ["serde"] }
 humantime    = "2.1"
 log          = { version = "0.1.25", package = "tracing" }
-minicbor-io  = { version = "0.13.0", features = ["async-io"] }
+minicbor-io  = { version = "0.14.0", features = ["async-io"] }
 protocol     = { path = "../protocol" }
 scopeguard   = "1.1.0"
 sealed-boxes = { path = "../sealed-boxes" }
@@ -22,14 +22,14 @@ socket2      = { version = "0.4.4", features = ["all"] }
 structopt    = "0.3.21"
 thiserror    = "1.0.24"
 tokio-rustls = { version = "0.23", default-features = false, features = ["logging"] }
-tokio-util   = { version = "0.7.3", features = ["compat"] }
+tokio-util   = { version = "0.7.4", features = ["compat"] }
 toml         = "0.5.9"
 util         = { path = "../util" }
 webpki-roots = "0.22"
 yamux        = "0.10.1"
 
 [dependencies.tokio]
-version          = "1.19"
+version          = "1.23"
 default-features = false
 features         = ["io-util", "macros", "net", "rt-multi-thread", "time", "sync"]
 
