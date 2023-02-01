@@ -9,7 +9,7 @@ description = "Cluvio GmbH connection agent"
 config       = { version = "0.13", default-features = false, features = ["toml"] }
 directories  = "4.0.1"
 either       = "1.7"
-futures      = "0.3.13"
+futures      = "0.3.26"
 ipnet        = { version = "2.7", features = ["serde"] }
 humantime    = "2.1"
 log          = { version = "0.1.25", package = "tracing" }
