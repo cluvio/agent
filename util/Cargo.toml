@@ -12,7 +12,7 @@ log            = { version = "0.1.25", package = "tracing" }
 minicbor       = { version = "0.19.0", features = ["derive", "std", "half"] }
 minicbor-io    = { version = "0.14.0", features = ["async-io"] }
 rand_core      = "0.6.2"
-rustls-pemfile = "1.0.0"
+rustls-pemfile = "1.0.2"
 sealed-boxes   = { path = "../sealed-boxes" }
 serde          = { version = "1.0.125", features = ["derive"] }
 tokio-rustls   = "0.23"
