@@ -4,8 +4,8 @@ use serde::{Deserialize, Deserializer};
 use serde::de::{self, IntoDeserializer};
 use std::borrow::{Borrow, Cow};
 use std::convert::TryFrom;
-use std::{fmt, fs, io};
-use std::path::{Path, PathBuf};
+use std::fmt;
+use std::path::PathBuf;
 use std::str::FromStr;
 use std::time::Duration;
 use structopt::StructOpt;
@@ -125,12 +125,6 @@ impl Config {
             allowed_addresses: default_net(),
             server: Server { host, port, trust: None }
         }
-    }
-
-    pub fn read_file(p: impl AsRef<Path>) -> io::Result<Self> {
-        let f = fs::read(p)?;
-        let c = toml::from_slice(&f)?;
-        Ok(c)
     }
 
     pub fn server_mut(&mut self) -> &mut Server {
