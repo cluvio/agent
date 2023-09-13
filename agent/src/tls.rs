@@ -26,9 +26,8 @@ impl Client {
     /// Create a new TLS client.
     pub fn new(config: &crate::Config) -> Result<Self, Error> {
         let mut root_store = rustls::RootCertStore::empty();
-        root_store.add_server_trust_anchors(
+        root_store.add_trust_anchors(
             webpki_roots::TLS_SERVER_ROOTS
-            .0
             .iter()
             .map(|ta| {
                 rustls::OwnedTrustAnchor::from_subject_spki_name_constraints(

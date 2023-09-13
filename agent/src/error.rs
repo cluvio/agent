@@ -2,7 +2,7 @@ use protocol::{Id, Reason};
 use std::io;
 use thiserror::Error;
 use tokio::time::error::Elapsed;
-use tokio_rustls::{rustls, webpki};
+use tokio_rustls::rustls;
 
 #[derive(Debug, Error)]
 #[non_exhaustive]
@@ -15,9 +15,6 @@ pub enum Error {
 
     #[error("crypto error: {0}")]
     Crypto(#[from] sealed_boxes::Error),
-
-    #[error("certificate error: {0}")]
-    Pki(#[from] webpki::Error),
 
     #[error("tls error: {0}")]
     Tls(#[from] rustls::Error),

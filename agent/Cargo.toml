@@ -1,6 +1,6 @@
 [package]
 name        = "cluvio-agent"
-version     = "1.0.4"
+version     = "1.0.5"
 license     = "MIT"
 edition     = "2021"
 description = "Cluvio GmbH connection agent"
@@ -9,32 +9,32 @@ description = "Cluvio GmbH connection agent"
 config       = { version = "0.13", default-features = false, features = ["toml"] }
 directories  = "4.0.1"
 either       = "1.7"
-futures      = "0.3.13"
+futures      = "0.3.28"
 ipnet        = { version = "2.7", features = ["serde"] }
 humantime    = "2.1"
-log          = { version = "0.1.25", package = "tracing" }
+log          = { version = "0.1.37", package = "tracing" }
 minicbor-io  = { version = "0.14.0", features = ["async-io"] }
 protocol     = { path = "../protocol" }
 scopeguard   = "1.1.0"
 sealed-boxes = { path = "../sealed-boxes" }
-serde        = { version = "1.0.125", features = ["derive"] }
-socket2      = { version = "0.4.4", features = ["all"] }
-structopt    = "0.3.21"
-thiserror    = "1.0.24"
-tokio-rustls = { version = "0.23", default-features = false, features = ["logging"] }
-tokio-util   = { version = "0.7.4", features = ["compat"] }
-toml         = "0.5.9"
+serde        = { version = "1.0.188", features = ["derive"] }
+socket2      = { version = "0.5.4", features = ["all"] }
+structopt    = "0.3.26"
+thiserror    = "1.0.48"
+tokio-rustls = { version = "0.24", default-features = false, features = ["logging"] }
+tokio-util   = { version = "0.7.8", features = ["compat"] }
+toml         = "0.5.11"
 util         = { path = "../util" }
-webpki-roots = "0.22"
+webpki-roots = "0.25"
 yamux        = "0.10.1"
 
 [dependencies.tokio]
-version          = "1.23"
+version          = "1.32"
 default-features = false
 features         = ["io-util", "macros", "net", "rt-multi-thread", "time", "sync"]
 
 [dependencies.tracing-subscriber]
-version  = "0.3.11"
+version  = "0.3.17"
 features = ["env-filter", "json"]
 
 [dev-dependencies]
@@ -44,7 +44,7 @@ rand       = "0.8.4"
 # Debian archive metadata
 
 [package.metadata.deb]
-copyright          = "2021, Cluvio GmbH"
+copyright          = "2023, Cluvio GmbH"
 maintainer         = "Cluvio GmbH <admin@cluvio.com>"
 maintainer-scripts = "../scripts/linux"
 
