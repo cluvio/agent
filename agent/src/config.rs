@@ -8,16 +8,15 @@ use std::fmt;
 use std::path::PathBuf;
 use std::str::FromStr;
 use std::time::Duration;
-use structopt::StructOpt;
 use tokio_rustls::rustls::Certificate;
 use util::{HostName, NonEmpty};
 
 pub use ipnet::{IpNet, Ipv4Net, Ipv6Net};
 
 /// Command-line options.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, clap::Parser)]
 #[non_exhaustive]
-#[structopt(name = "cluvio-agent")]
+#[command(name = "cluvio-agent")]
 pub struct Options {
     /// Path to the configuration file.
     ///
@@ -37,23 +36,23 @@ pub struct Options {
     /// Windows:
     ///   1. In `%USERPROFILE%\AppData\Roaming` (`%APPDATA%`).
     ///   2. In the directory of the `cluvio-agent` executable.
-    #[structopt(short, long, parse(from_os_str), verbatim_doc_comment)]
+    #[arg(short, long, verbatim_doc_comment)]
     pub config: Option<PathBuf>,
 
     /// Show version information.
-    #[structopt(long)]
+    #[arg(long)]
     pub version: bool,
 
     /// Log-level.
-    #[structopt(short, long)]
+    #[arg(short, long)]
     pub log: Option<String>,
 
     /// Use json format for log messages.
-    #[structopt(short, long)]
+    #[arg(short, long)]
     pub json: bool,
 
     /// Generate a new keypair.
-    #[structopt(short, long)]
+    #[arg(short, long)]
     pub gen_keypair: bool
 }
 
@@ -183,4 +182,3 @@ fn default_net() -> NonEmpty<Network> {
     ];
     NonEmpty::try_from(v).expect("3 element vector is not empty")
 }
-

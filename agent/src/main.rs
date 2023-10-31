@@ -1,15 +1,15 @@
+use clap::Parser;
 use cluvio_agent::{self, Agent, Config, Options};
 use directories::BaseDirs;
 use std::env;
 use std::path::{Path, PathBuf};
-use structopt::StructOpt;
 use util::{base64, exit};
 
 const CONFIG_FILE_NAME: &str = "cluvio-agent.toml";
 
 #[tokio::main]
 async fn main() {
-    let opts = Options::from_args();
+    let opts = Options::parse();
 
     if opts.version {
         println!("{}", cluvio_agent::version().unwrap_or_else(exit("version")));
@@ -104,4 +104,3 @@ fn find_config() -> Option<PathBuf> {
         None
     }
 }
-
