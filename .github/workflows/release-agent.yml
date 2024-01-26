@@ -237,57 +237,57 @@ jobs:
 
     - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-linux.tar.xz
         path: dist/
 
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-macos.tar.xz
         path: dist/
 
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-macos.dmg
         path: dist/
 
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-linux.tar.xz
         path: dist/
 
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-macos.tar.xz
         path: dist/
 
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-macos.dmg
         path: dist/
 
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-windows.zip
         path: dist/
 
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: cluvio-agent_${{ env.AGENT_VERSION }}_amd64.deb
         path: dist/
 
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: cluvio-agent_${{ env.AGENT_VERSION }}_arm64.deb
         path: dist/
 
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: cluvio-agent-${{ env.AGENT_VERSION }}-1.x86_64.rpm
         path: dist/
 
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: cluvio-agent-${{ env.AGENT_VERSION }}-1.aarch64.rpm
         path: dist/
