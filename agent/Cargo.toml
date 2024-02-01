@@ -18,7 +18,7 @@ minicbor-io  = { version = "0.15.0", features = ["async-io"] }
 protocol     = { path = "../protocol" }
 scopeguard   = "1.1.0"
 sealed-boxes = { path = "../sealed-boxes" }
-serde        = { version = "1.0.188", features = ["derive"] }
+serde        = { version = "1.0.196", features = ["derive"] }
 socket2      = { version = "0.5.4", features = ["all"] }
 thiserror    = "1.0.50"
 tokio-rustls = { version = "0.24", default-features = false, features = ["logging"] }
