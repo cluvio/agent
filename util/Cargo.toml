@@ -14,7 +14,7 @@ minicbor-io    = { version = "0.15.0", features = ["async-io"] }
 rand_core      = "0.6.4"
 rustls-pemfile = "1.0.3"
 sealed-boxes   = { path = "../sealed-boxes" }
-serde          = { version = "1.0.188", features = ["derive"] }
+serde          = { version = "1.0.196", features = ["derive"] }
 tokio-rustls   = "0.24"
 
 [dependencies.chacha20poly1305]
