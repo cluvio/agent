@@ -5,6 +5,9 @@ on: workflow_dispatch
 env:
   CARGO_TERM_COLOR: always
 
+permissions:
+  contents: write
+
 jobs:
   check-release:
     runs-on: ubuntu-latest
