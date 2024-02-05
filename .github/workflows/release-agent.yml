@@ -151,6 +151,7 @@ jobs:
         MACOS_DEV_IDENTITY: ${{ secrets.MACOS_DEV_IDENTITY }}
         APPLE_DEV_ACCOUNT: ${{ secrets.APPLE_DEV_ACCOUNT }}
         APPLE_DEV_PASSWORD: ${{ secrets.APPLE_DEV_PASSWORD }}
+        APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
     - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
@@ -185,6 +186,7 @@ jobs:
         MACOS_DEV_IDENTITY: ${{ secrets.MACOS_DEV_IDENTITY }}
         APPLE_DEV_ACCOUNT: ${{ secrets.APPLE_DEV_ACCOUNT }}
         APPLE_DEV_PASSWORD: ${{ secrets.APPLE_DEV_PASSWORD }}
+        APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
     - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 

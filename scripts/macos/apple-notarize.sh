@@ -24,6 +24,7 @@ fi
 xcrun notarytool submit \
     --apple-id "$APPLE_DEV_ACCOUNT" \
     --password "$APPLE_DEV_PASSWORD" \
+    --team-id "$APPLE_TEAM_ID" \
     --wait \
     "${dmg_name}.dmg"
 
