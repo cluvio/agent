@@ -21,7 +21,7 @@ sealed-boxes = { path = "../sealed-boxes" }
 serde        = { version = "1.0.196", features = ["derive"] }
 socket2      = { version = "0.5.4", features = ["all"] }
 thiserror    = "1.0.50"
-tokio-rustls = { version = "0.24", default-features = false, features = ["logging"] }
+tokio-rustls = { version = "0.25", default-features = false, features = ["logging"] }
 tokio-util   = { version = "0.7.10", features = ["compat"] }
 util         = { path = "../util" }
 webpki-roots = "0.25"
