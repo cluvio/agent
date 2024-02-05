@@ -46,6 +46,7 @@ rand       = "0.8.4"
 copyright          = "2023, Cluvio GmbH"
 maintainer         = "Cluvio GmbH <admin@cluvio.com>"
 maintainer-scripts = "../scripts/linux"
+revision           = ""
 
 [package.metadata.deb.systemd-units]
 start           = false
