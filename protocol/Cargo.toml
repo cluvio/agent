@@ -6,7 +6,7 @@ edition = "2021"
 
 [dependencies]
 sealed-boxes  = { path = "../sealed-boxes" }
-minicbor      = { version = "0.20.0", features = ["derive", "std", "half"] }
+minicbor      = { version = "0.21.1", features = ["derive", "std", "half"] }
 nohash-hasher = "0.2"
 rand_core     = { version = "0.6.4", features = ["getrandom"] }
 serde         = { version = "1.0.196", features = ["derive"] }
