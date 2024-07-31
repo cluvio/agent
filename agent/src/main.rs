@@ -3,12 +3,15 @@ use cluvio_agent::{self, Agent, Config, Options};
 use directories::BaseDirs;
 use std::env;
 use std::path::{Path, PathBuf};
+use tokio_rustls::rustls::crypto::aws_lc_rs;
 use util::{base64, exit};
 
 const CONFIG_FILE_NAME: &str = "cluvio-agent.toml";
 
 #[tokio::main]
 async fn main() {
+    aws_lc_rs::default_provider().install_default().expect("aws-lc not available");
+
     let opts = Options::parse();
 
     if opts.version {

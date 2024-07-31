@@ -5,10 +5,10 @@ use serde::{Deserialize, Deserializer, de::Error};
 use serde::{Serialize, Serializer};
 use std::borrow::{Borrow, Cow};
 use std::convert::{TryFrom, TryInto};
-use std::fmt;
+use std::{io, fmt};
 use std::str::FromStr;
 use std::time::Duration;
-use tokio_rustls::rustls::{Certificate, PrivateKey};
+use tokio_rustls::rustls::pki_types::{CertificateDer, PrivatePkcs8KeyDer};
 
 /// Deserialize any `FromStr` impl.
 pub fn decode_from_str<'de, D, T>(d: D) -> Result<T, D::Error>
@@ -70,9 +70,10 @@ pub fn decode_crypto_key<'de, D: Deserializer<'de>>(d: D) -> Result<crypto::Key,
 }
 
 /// Decode PEM-encoded private key.
-pub fn decode_private_key<'de, D: Deserializer<'de>>(d: D) -> Result<PrivateKey, D::Error> {
+pub fn decode_private_key<'de, D: Deserializer<'de>>(d: D) -> Result<PrivatePkcs8KeyDer<'static>, D::Error> {
     let s = <Cow<'de, str>>::deserialize(d)?;
     let v = rustls_pemfile::pkcs8_private_keys(&mut s.as_bytes())
+        .collect::<Result<Vec<PrivatePkcs8KeyDer<'static>>, io::Error>>()
         .map_err(|e| {
             Error::custom(format!("failed to read private key: {}", e))
         })?;
@@ -80,17 +81,17 @@ pub fn decode_private_key<'de, D: Deserializer<'de>>(d: D) -> Result<PrivateKey,
         return Err(Error::custom("multiple private keys are not supported"))
     }
     if let Some(k) = v.into_iter().next() {
-        Ok(PrivateKey(k))
+        Ok(PrivatePkcs8KeyDer::from(k))
     } else {
         Err(Error::custom("no private key found"))
     }
 }
 
 /// Decode PEM-encoded certificates.
-pub fn decode_certificates<'de, D: Deserializer<'de>>(d: D) -> Result<NonEmpty<Certificate>, D::Error> {
+pub fn decode_certificates<'de, D: Deserializer<'de>>(d: D) -> Result<NonEmpty<CertificateDer<'static>>, D::Error> {
     let s = <Cow<'de, str>>::deserialize(d)?;
     let v = rustls_pemfile::certs(&mut s.as_bytes())
-        .map(|v| v.into_iter().map(Certificate).collect::<Vec<_>>())
+        .collect::<Result<Vec<CertificateDer<'static>>, io::Error>>()
         .map_err(|e| {
             Error::custom(format!("failed to read certificate: {}", e))
         })?;
@@ -98,10 +99,10 @@ pub fn decode_certificates<'de, D: Deserializer<'de>>(d: D) -> Result<NonEmpty<C
 }
 
 /// Decode optional PEM-encoded certificates.
-pub fn decode_opt_certificates<'de, D: Deserializer<'de>>(d: D) -> Result<Option<NonEmpty<Certificate>>, D::Error> {
+pub fn decode_opt_certificates<'de, D: Deserializer<'de>>(d: D) -> Result<Option<NonEmpty<CertificateDer<'static>>>, D::Error> {
     if let Some(s) = <Option<Cow<'de, str>>>::deserialize(d)? {
         let v = rustls_pemfile::certs(&mut s.as_bytes())
-            .map(|v| v.into_iter().map(Certificate).collect::<Vec<_>>())
+            .collect::<Result<Vec<CertificateDer<'static>>, io::Error>>()
             .map_err(|e| {
                 Error::custom(format!("failed to read certificate: {}", e))
             })?;

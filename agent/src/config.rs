@@ -8,7 +8,7 @@ use std::fmt;
 use std::path::PathBuf;
 use std::str::FromStr;
 use std::time::Duration;
-use tokio_rustls::rustls::Certificate;
+use tokio_rustls::rustls::pki_types::CertificateDer;
 use util::{HostName, NonEmpty};
 
 pub use ipnet::{IpNet, Ipv4Net, Ipv6Net};
@@ -159,7 +159,7 @@ pub struct Server {
 
     /// Optional certificate to add as trusted.
     #[serde(deserialize_with = "util::serde::decode_opt_certificates", default)]
-    pub trust: Option<NonEmpty<Certificate>>
+    pub trust: Option<NonEmpty<CertificateDer<'static>>>
 }
 
 fn default_port() -> u16 {

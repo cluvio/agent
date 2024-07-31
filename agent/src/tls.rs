@@ -25,29 +25,26 @@ impl fmt::Debug for Client {
 impl Client {
     /// Create a new TLS client.
     pub fn new(config: &crate::Config) -> Result<Self, Error> {
-        let mut root_store = rustls::RootCertStore::empty();
-        root_store.add_trust_anchors(
-            webpki_roots::TLS_SERVER_ROOTS
-            .iter()
-            .map(|ta| {
-                rustls::OwnedTrustAnchor::from_subject_spki_name_constraints(
-                    ta.subject,
-                    ta.spki,
-                    ta.name_constraints,
-                )
-            })
-        );
+        let mut root_store = rustls::RootCertStore {
+            roots: webpki_roots::TLS_SERVER_ROOTS
+                .iter()
+                .map(|ta| {
+                    rustls::pki_types::TrustAnchor {
+                        subject: ta.subject.clone(),
+                        subject_public_key_info: ta.subject_public_key_info.clone(),
+                        name_constraints: ta.name_constraints.clone(),
+                    }
+                })
+                .collect()
+        };
 
         if let Some(certs) = &config.server.trust {
             for c in certs.iter() {
-                root_store.add(c)?
+                root_store.add(c.clone())?
             }
         }
 
-        let cfg = ClientConfig::builder()
-            .with_cipher_suites(&[rustls::cipher_suite::TLS13_CHACHA20_POLY1305_SHA256])
-            .with_kx_groups(&[&rustls::kx_group::X25519])
-            .with_protocol_versions(&[&rustls::version::TLS13])?
+        let cfg = ClientConfig::builder_with_protocol_versions(&[&rustls::version::TLS13])
             .with_root_certificates(root_store)
             .with_no_client_auth();
 

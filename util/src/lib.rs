@@ -11,7 +11,7 @@ use std::fmt;
 use std::convert::TryFrom;
 use std::ops::Deref;
 use std::str::FromStr;
-use tokio_rustls::rustls::ServerName;
+use tokio_rustls::rustls::pki_types::ServerName;
 
 /// A non-empty vector.
 #[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize)]
@@ -119,7 +119,7 @@ impl<'a> FromStr for Location {
 }
 
 #[derive(Debug, Clone)]
-pub struct HostName(ServerName);
+pub struct HostName(ServerName<'static>);
 
 impl HostName {
     pub fn as_str(&self) -> &str {
@@ -129,7 +129,7 @@ impl HostName {
         unreachable!()
     }
 
-    pub fn as_server_name(&self) -> &ServerName {
+    pub fn as_server_name(&self) -> &ServerName<'static> {
         &self.0
     }
 }
@@ -166,7 +166,7 @@ impl<'a> FromStr for HostName {
     type Err = InvalidHostName;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match ServerName::try_from(s) {
+        match ServerName::try_from(s.to_string()) {
             Ok(n@ServerName::DnsName(_)) => Ok(HostName(n)),
             Ok(_)  => Err(InvalidHostName(format!("not a DNS name: `{}`", s))),
             Err(e) => Err(InvalidHostName(format!("`{}`: {:?}", s, e)))
