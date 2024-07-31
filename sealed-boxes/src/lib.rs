@@ -13,6 +13,10 @@ use std::convert::TryInto;
 
 pub use crypto_box::{PublicKey, SecretKey, aead::Error};
 
+// crypto_box 0.8
+pub use crypto_box_legacy::{PublicKey as PublicKeyLegacy, SecretKey as SecretKeyLegacy};
+use crypto_box_legacy::{ChaChaBox as ChaChaBoxLegacy, aead::AeadInPlace as AeadInPlaceLegacy};
+
 /// {public, secret} key lengths
 const K: usize = 32;
 /// tag length
@@ -55,8 +59,18 @@ pub fn encrypt<const N: usize>(pk: &PublicKey, mut msg: [u8; N]) -> Result<Data<
     let ep = es.public_key();
     let nc = nonce(ep.as_bytes(), pk.as_bytes()).into();
     let cb = ChaChaBox::new(pk, &es);
-    let tg = cb.encrypt_in_place_detached(&nc, &[], &mut msg[..])?;
+    let tg = AeadInPlace::encrypt_in_place_detached(&cb, &nc, &[], &mut msg[..])?;
     Ok(Data { key: *ep.as_bytes(), data: msg, tag: tg.into() })
+}
+
+/// Decrypt a message using the given secret key.
+pub fn decrypt_legacy<const N: usize>(sk: &SecretKeyLegacy, mut data: Data<N>) -> Result<[u8; N], Error> {
+    let ep = PublicKeyLegacy::from(data.key);
+    let tg = data.tag.into();
+    let nc = nonce(ep.as_bytes(), sk.public_key().as_bytes()).into();
+    let cb = ChaChaBoxLegacy::new(&ep, sk);
+    AeadInPlaceLegacy::decrypt_in_place_detached(&cb, &nc, &[], &mut data.data, &tg)?;
+    Ok(data.data)
 }
 
 /// Decrypt a message using the given secret key.
@@ -65,7 +79,7 @@ pub fn decrypt<const N: usize>(sk: &SecretKey, mut data: Data<N>) -> Result<[u8;
     let tg = data.tag.into();
     let nc = nonce(ep.as_bytes(), sk.public_key().as_bytes()).into();
     let cb = ChaChaBox::new(&ep, sk);
-    cb.decrypt_in_place_detached(&nc, &[], &mut data.data, &tg)?;
+    AeadInPlace::decrypt_in_place_detached(&cb, &nc, &[], &mut data.data, &tg)?;
     Ok(data.data)
 }
 

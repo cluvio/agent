@@ -1,5 +1,5 @@
 use crate::dns_pattern::DnsPattern;
-use sealed_boxes::SecretKey;
+use sealed_boxes::{SecretKey, SecretKeyLegacy};
 use serde::{Deserialize, Deserializer};
 use serde::de::{self, IntoDeserializer};
 use std::borrow::{Borrow, Cow};
@@ -79,6 +79,12 @@ pub struct Config {
 
     /// Server settings.
     pub server: Server
+}
+
+impl Config {
+    pub fn secret_key_legacy(&self) -> SecretKeyLegacy {
+        SecretKeyLegacy::from(self.secret_key.to_bytes())
+    }
 }
 
 #[derive(Debug, Clone)]
