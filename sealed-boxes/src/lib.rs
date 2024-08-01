@@ -79,16 +79,6 @@ pub fn encrypt_legacy<const N: usize>(pk: &PublicKeyLegacy, mut msg: [u8; N]) ->
 }
 
 /// Decrypt a message using the given secret key.
-pub fn decrypt_legacy<const N: usize>(sk: &SecretKeyLegacy, mut data: Data<N>) -> Result<[u8; N], Error> {
-    let ep = PublicKeyLegacy::from(data.key);
-    let tg = data.tag.into();
-    let nc = nonce(ep.as_bytes(), sk.public_key().as_bytes()).into();
-    let cb = ChaChaBoxLegacy::new(&ep, sk);
-    AeadInPlaceLegacy::decrypt_in_place_detached(&cb, &nc, &[], &mut data.data, &tg)?;
-    Ok(data.data)
-}
-
-/// Decrypt a message using the given secret key.
 pub fn decrypt<const N: usize>(sk: &SecretKey, mut data: Data<N>) -> Result<[u8; N], Error> {
     let ep = PublicKey::from(data.key);
     let tg = data.tag.into();

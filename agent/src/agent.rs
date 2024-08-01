@@ -9,7 +9,7 @@ use humantime::format_duration;
 use protocol::{AgentId, Client, ErrorCode, Id, Message, Server};
 use protocol::{Reason, Version};
 use scopeguard::{ScopeGuard, guard};
-use sealed_boxes::{decrypt, decrypt_legacy};
+use sealed_boxes::decrypt;
 use std::borrow::Cow;
 use std::mem;
 use std::sync::Arc;
@@ -255,7 +255,7 @@ impl Agent {
             }
             Some(Server::Challenge { text }) =>
                 if self.online {
-                    match decrypt(&self.config.secret_key, text.0.clone()).or(decrypt_legacy(&self.config.secret_key_legacy(), text.0)) {
+                    match decrypt(&self.config.secret_key, text.0.clone()) {
                         Ok(plain) => {
                             let data = Client::Response {
                                 re: msg.id,
