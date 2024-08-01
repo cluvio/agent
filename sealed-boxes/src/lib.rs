@@ -46,6 +46,11 @@ pub fn gen_secret_key() -> SecretKey {
     SecretKey::from(fresh_array())
 }
 
+/// Generate a new random secret key.
+pub fn gen_secret_key_legacy() -> SecretKeyLegacy {
+    SecretKeyLegacy::from(fresh_array())
+}
+
 /// Generate a new random array.
 pub fn fresh_array<const N: usize>() -> [u8; N] {
     let mut a = [0; N];
@@ -60,6 +65,16 @@ pub fn encrypt<const N: usize>(pk: &PublicKey, mut msg: [u8; N]) -> Result<Data<
     let nc = nonce(ep.as_bytes(), pk.as_bytes()).into();
     let cb = ChaChaBox::new(pk, &es);
     let tg = AeadInPlace::encrypt_in_place_detached(&cb, &nc, &[], &mut msg[..])?;
+    Ok(Data { key: *ep.as_bytes(), data: msg, tag: tg.into() })
+}
+
+/// Encrypt a message for the given public key.
+pub fn encrypt_legacy<const N: usize>(pk: &PublicKeyLegacy, mut msg: [u8; N]) -> Result<Data<N>, Error> {
+    let es = gen_secret_key_legacy();
+    let ep = es.public_key();
+    let nc = nonce(ep.as_bytes(), pk.as_bytes()).into();
+    let cb = ChaChaBoxLegacy::new(pk, &es);
+    let tg = AeadInPlaceLegacy::encrypt_in_place_detached(&cb, &nc, &[], &mut msg[..])?;
     Ok(Data { key: *ep.as_bytes(), data: msg, tag: tg.into() })
 }
 

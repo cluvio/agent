@@ -15,7 +15,7 @@ pub fn version() -> Result<protocol::Version, Error> {
     let major = parse(env!("CARGO_PKG_VERSION_MAJOR"))?;
     let minor = parse(env!("CARGO_PKG_VERSION_MINOR"))?;
     let patch = parse(env!("CARGO_PKG_VERSION_PATCH"))?;
-    Ok(protocol::Version::new(major, minor, patch))
+    Ok(protocol::Version { major, minor, patch })
 }
 
 use futures::io;

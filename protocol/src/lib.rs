@@ -363,15 +363,9 @@ impl fmt::Debug for Id {
 /// Version information.
 #[derive(Debug, Clone, Copy, Encode, Decode, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Version {
-    #[n(0)] major: u64,
-    #[n(1)] minor: u64,
-    #[n(2)] patch: u64
-}
-
-impl Version {
-    pub fn new(major: u64, minor: u64, patch: u64) -> Self {
-        Version { major, minor, patch }
-    }
+    #[n(0)] pub major: u64,
+    #[n(1)] pub minor: u64,
+    #[n(2)] pub patch: u64
 }
 
 impl fmt::Display for Version {
