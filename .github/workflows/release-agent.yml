@@ -171,7 +171,7 @@ jobs:
         retention-days: 1
 
   build-aarch64-macos:
-    runs-on: macos-latest
+    runs-on: macos-12
     needs:
       - check-release
     steps:
