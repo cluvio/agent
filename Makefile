@@ -27,7 +27,6 @@ build-agent-x86_64-linux: clean
 		--locked \
 		--root build/ \
 		--path agent
-	strip build/bin/cluvio-agent
 	mv build/bin/cluvio-agent build/cluvio-agent
 	tar caf dist/cluvio-agent-$(AGENT_VERSION)-x86_64-linux.tar.xz -C build/ cluvio-agent
 
@@ -41,7 +40,6 @@ build-agent-aarch64-linux: clean
 		--locked \
 		--root build/ \
 		--path agent
-	aarch64-linux-gnu-strip build/bin/cluvio-agent
 	mv build/bin/cluvio-agent build/cluvio-agent
 	tar caf dist/cluvio-agent-$(AGENT_VERSION)-aarch64-linux.tar.xz -C build/ cluvio-agent
 
@@ -53,7 +51,6 @@ build-agent-x86_64-macos: clean
 		--locked \
 		--root build/ \
 		--path agent
-	strip build/bin/cluvio-agent
 	mv build/bin/cluvio-agent build/cluvio-agent
 	scripts/macos/apple-codesign.sh build/cluvio-agent cluvio-agent-$(AGENT_VERSION)-x86_64-macos
 	scripts/macos/apple-notarize.sh build/cluvio-agent cluvio-agent-$(AGENT_VERSION)-x86_64-macos
@@ -69,7 +66,6 @@ build-agent-aarch64-macos: clean
 		--locked \
 		--root build/ \
 		--path agent
-	strip build/bin/cluvio-agent
 	mv build/bin/cluvio-agent build/cluvio-agent
 	scripts/macos/apple-codesign.sh build/cluvio-agent cluvio-agent-$(AGENT_VERSION)-aarch64-macos
 	scripts/macos/apple-notarize.sh build/cluvio-agent cluvio-agent-$(AGENT_VERSION)-aarch64-macos
@@ -84,7 +80,6 @@ build-agent-x86_64-windows: clean
 		--locked \
 		--root build/ \
 		--path agent
-	strip build/bin/cluvio-agent.exe
 	mv build/bin/cluvio-agent.exe build/cluvio-agent.exe
 	(cd build && 7z.exe a ../dist/cluvio-agent-$(AGENT_VERSION)-x86_64-windows.zip cluvio-agent.exe)
 
@@ -120,13 +115,12 @@ docker-agent-release:
 	docker manifest push cluvio/agent:latest
 
 deb-agent-x86_64: build-agent-x86_64-linux
-	cargo deb -p cluvio-agent --target=x86_64-unknown-linux-musl
+	cargo deb -p cluvio-agent --target=x86_64-unknown-linux-musl --no-build --no-strip
 
 deb-agent-aarch64: build-agent-aarch64-linux
-	cargo deb -p cluvio-agent --target=aarch64-unknown-linux-musl
+	cargo deb -p cluvio-agent --target=aarch64-unknown-linux-musl --no-build --no-strip
 
 rpm-agent-x86_64: build-agent-x86_64-linux
-	strip target/x86_64-unknown-linux-musl/release/cluvio-agent
 	cargo generate-rpm -p agent --target=x86_64-unknown-linux-musl
 
 rpm-agent-aarch64: build-agent-aarch64-linux
