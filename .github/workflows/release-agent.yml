@@ -181,6 +181,9 @@ jobs:
     - name: Install Apple Darwin target
       run: rustup target add aarch64-apple-darwin
 
+    - name: Show SDK Versions
+      run: xcrun --show-sdk-version
+
     - name: Package agent.
       run: make build-agent-aarch64-macos
       env:
