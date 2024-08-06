@@ -181,7 +181,7 @@ jobs:
     - name: Install Apple Darwin target
       run: rustup target add aarch64-apple-darwin
 
-    - name: Show SDK Versions
+    - name: SDK Version
       run: xcrun --show-sdk-version
 
     - name: Package agent.
