@@ -12,221 +12,224 @@ jobs:
   check-release:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository.
-      uses: actions/checkout@v4
+      - name: Checkout repository.
+        uses: actions/checkout@v4
 
-    - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
+      - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
-    - name: Check if release exists.
-      shell: bash
-      run: |
-        gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
-        ! gh release view "v${{ env.AGENT_VERSION }}" > /dev/null 2>&1
+      - name: Check if release exists.
+        shell: bash
+        run: |
+          gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
+          ! gh release view "v${{ env.AGENT_VERSION }}" > /dev/null 2>&1
 
-    - name: Check if changelog file exists.
-      shell: bash
-      run: test -f changelog/v${{ env.AGENT_VERSION }}.md
+      - name: Check if changelog file exists.
+        shell: bash
+        run: test -f changelog/v${{ env.AGENT_VERSION }}.md
 
   build-x86_64-linux:
     runs-on: ubuntu-latest
     needs:
       - check-release
     steps:
-    - name: Checkout repository.
-      uses: actions/checkout@v4
+      - name: Checkout repository.
+        uses: actions/checkout@v4
 
-    - name: Install MUSL
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y musl-dev musl-tools
+      - name: Install cross
+        run: |
+          cargo install cross --git https://github.com/cross-rs/cross
 
-    - name: Install MUSL target
-      run: rustup target add x86_64-unknown-linux-musl
+      - name: Install cargo-deb
+        run: cargo install cargo-deb --version 2.0.5
 
-    - name: Install cargo-deb
-      run: cargo install cargo-deb --version 2.0.5
+      - name: Install cargo-generate-rpm
+        run: cargo install cargo-generate-rpm --version 0.14.0
 
-    - name: Install cargo-generate-rpm
-      run: cargo install cargo-generate-rpm --version 0.14.0
+      - name: Package agent (deb).
+        run: make deb-agent-x86_64
 
-    - name: Package agent (deb).
-      run: make deb-agent-x86_64
+      - name: Package agent (rpm).
+        run: make rpm-agent-x86_64
 
-    - name: Package agent (rpm).
-      run: make rpm-agent-x86_64
+      - name: Package agent (docker).
+        run: make docker-agent-x86_64-linux
+        env:
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-    - name: Package agent (docker).
-      run: make docker-agent-x86_64-linux
-      env:
-        DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
-        DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+      - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
-    - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-linux.tar.xz
+          path: "dist/cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-linux.tar.xz"
+          retention-days: 1
 
-    - uses: actions/upload-artifact@v4
-      with:
-        name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-linux.tar.xz
-        path: "dist/cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-linux.tar.xz"
-        retention-days: 1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cluvio-agent_${{ env.AGENT_VERSION }}_amd64.deb
+          path: "target/x86_64-unknown-linux-musl/debian/cluvio-agent_${{ env.AGENT_VERSION }}_amd64.deb"
+          retention-days: 1
 
-    - uses: actions/upload-artifact@v4
-      with:
-        name: cluvio-agent_${{ env.AGENT_VERSION }}_amd64.deb
-        path: "target/x86_64-unknown-linux-musl/debian/cluvio-agent_${{ env.AGENT_VERSION }}_amd64.deb"
-        retention-days: 1
-
-    - uses: actions/upload-artifact@v4
-      with:
-        name: cluvio-agent-${{ env.AGENT_VERSION }}-1.x86_64.rpm
-        path: "target/x86_64-unknown-linux-musl/generate-rpm/cluvio-agent-${{ env.AGENT_VERSION }}-1.x86_64.rpm"
-        retention-days: 1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cluvio-agent-${{ env.AGENT_VERSION }}-1.x86_64.rpm
+          path: "target/x86_64-unknown-linux-musl/generate-rpm/cluvio-agent-${{ env.AGENT_VERSION }}-1.x86_64.rpm"
+          retention-days: 1
 
   build-aarch64-linux:
     runs-on: ubuntu-latest
     needs:
       - check-release
     steps:
-    - name: Checkout repository.
-      uses: actions/checkout@v4
+      - name: Checkout repository.
+        uses: actions/checkout@v4
 
-    - name: Install MUSL and other apt dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y musl-dev musl-tools gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu qemu-user-static binfmt-support
+      - name: Install cross
+        run: |
+          cargo install cross --git https://github.com/cross-rs/cross
 
-    - name: Install MUSL target
-      run: rustup target add aarch64-unknown-linux-musl
+      - name: Install cargo-deb
+        run: cargo install cargo-deb --version 2.0.5
 
-    - name: Install cargo-deb
-      run: cargo install cargo-deb --version 2.0.5
+      - name: Install cargo-generate-rpm
+        run: cargo install cargo-generate-rpm --version 0.14.0
 
-    - name: Install cargo-generate-rpm
-      run: cargo install cargo-generate-rpm --version 0.14.0
+      - name: Package agent (deb).
+        run: make deb-agent-aarch64
 
-    - name: Package agent (deb).
-      run: make deb-agent-aarch64
+      - name: Package agent (rpm).
+        run: make rpm-agent-aarch64
 
-    - name: Package agent (rpm).
-      run: make rpm-agent-aarch64
+      - name: Package agent (docker).
+        run: make docker-agent-aarch64-linux
+        env:
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-    - name: Package agent (docker).
-      run: make docker-agent-aarch64-linux
-      env:
-        DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
-        DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+      - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
-    - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-linux.tar.xz
+          path: "dist/cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-linux.tar.xz"
+          retention-days: 1
 
-    - uses: actions/upload-artifact@v4
-      with:
-        name: cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-linux.tar.xz
-        path: "dist/cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-linux.tar.xz"
-        retention-days: 1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cluvio-agent_${{ env.AGENT_VERSION }}_arm64.deb
+          path: "target/aarch64-unknown-linux-musl/debian/cluvio-agent_${{ env.AGENT_VERSION }}_arm64.deb"
+          retention-days: 1
 
-    - uses: actions/upload-artifact@v4
-      with:
-        name: cluvio-agent_${{ env.AGENT_VERSION }}_arm64.deb
-        path: "target/aarch64-unknown-linux-musl/debian/cluvio-agent_${{ env.AGENT_VERSION }}_arm64.deb"
-        retention-days: 1
-
-    - uses: actions/upload-artifact@v4
-      with:
-        name: cluvio-agent-${{ env.AGENT_VERSION }}-1.aarch64.rpm
-        path: "target/aarch64-unknown-linux-musl/generate-rpm/cluvio-agent-${{ env.AGENT_VERSION }}-1.aarch64.rpm"
-        retention-days: 1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cluvio-agent-${{ env.AGENT_VERSION }}-1.aarch64.rpm
+          path: "target/aarch64-unknown-linux-musl/generate-rpm/cluvio-agent-${{ env.AGENT_VERSION }}-1.aarch64.rpm"
+          retention-days: 1
 
   build-x86_64-macos:
-    runs-on: macos-latest
+    runs-on: macos-12
     needs:
       - check-release
     steps:
-    - name: Checkout repository.
-      uses: actions/checkout@v4
+      - name: Checkout repository.
+        uses: actions/checkout@v4
 
-    - name: Install Apple Darwin target
-      run: rustup target add x86_64-apple-darwin
+      - name: Install Apple Darwin target
+        run: rustup target add x86_64-apple-darwin
 
-    - name: Package agent.
-      run: make build-agent-x86_64-macos
-      env:
-        MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
-        MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
-        MACOS_DEV_IDENTITY: ${{ secrets.MACOS_DEV_IDENTITY }}
-        APPLE_DEV_ACCOUNT: ${{ secrets.APPLE_DEV_ACCOUNT }}
-        APPLE_DEV_PASSWORD: ${{ secrets.APPLE_DEV_PASSWORD }}
-        APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      - name: Package agent.
+        run: make build-agent-x86_64-macos
+        env:
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+          MACOS_DEV_IDENTITY: ${{ secrets.MACOS_DEV_IDENTITY }}
+          APPLE_DEV_ACCOUNT: ${{ secrets.APPLE_DEV_ACCOUNT }}
+          APPLE_DEV_PASSWORD: ${{ secrets.APPLE_DEV_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
-    - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
+      - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
-    - uses: actions/upload-artifact@v4
-      with:
-        name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-macos.tar.xz
-        path: "dist/cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-macos.tar.xz"
-        retention-days: 1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-macos.tar.xz
+          path: "dist/cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-macos.tar.xz"
+          retention-days: 1
 
-    - uses: actions/upload-artifact@v4
-      with:
-        name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-macos.dmg
-        path: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-macos.dmg
-        retention-days: 1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-macos.dmg
+          path: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-macos.dmg
+          retention-days: 1
 
   build-aarch64-macos:
-    runs-on: macos-latest
+    runs-on: macos-12
     needs:
       - check-release
     steps:
-    - name: Checkout repository.
-      uses: actions/checkout@v4
+      - name: Checkout repository.
+        uses: actions/checkout@v4
 
-    - name: Install Apple Darwin target
-      run: rustup target add aarch64-apple-darwin
+      - name: Install Apple Darwin target
+        run: rustup target add aarch64-apple-darwin
 
-    - name: Package agent.
-      run: make build-agent-aarch64-macos
-      env:
-        MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
-        MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
-        MACOS_DEV_IDENTITY: ${{ secrets.MACOS_DEV_IDENTITY }}
-        APPLE_DEV_ACCOUNT: ${{ secrets.APPLE_DEV_ACCOUNT }}
-        APPLE_DEV_PASSWORD: ${{ secrets.APPLE_DEV_PASSWORD }}
-        APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      - name: Select SDK Version
+        run: sudo xcode-select -s "/Applications/Xcode_14.0.1.app" # macosx12.3
 
-    - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
+      - name: Show SDK Version
+        run: xcrun --show-sdk-platform-version # macosx12.3 = MACOSX_DEPLOYMENT_TARGET
 
-    - uses: actions/upload-artifact@v4
-      with:
-        name: cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-macos.tar.xz
-        path: "dist/cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-macos.tar.xz"
-        retention-days: 1
+      - name: Package agent.
+        run: make build-agent-aarch64-macos
+        env:
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+          MACOS_DEV_IDENTITY: ${{ secrets.MACOS_DEV_IDENTITY }}
+          APPLE_DEV_ACCOUNT: ${{ secrets.APPLE_DEV_ACCOUNT }}
+          APPLE_DEV_PASSWORD: ${{ secrets.APPLE_DEV_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
-    - uses: actions/upload-artifact@v4
-      with:
-        name: cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-macos.dmg
-        path: cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-macos.dmg
-        retention-days: 1
+      - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-macos.tar.xz
+          path: "dist/cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-macos.tar.xz"
+          retention-days: 1
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-macos.dmg
+          path: cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-macos.dmg
+          retention-days: 1
 
   build-x86_64-windows:
     runs-on: windows-latest
     needs:
       - check-release
     steps:
-    - name: Checkout repository.
-      uses: actions/checkout@v4
+      - name: Checkout repository.
+        uses: actions/checkout@v4
 
-    - name: Install Windows target
-      run: rustup target add x86_64-pc-windows-msvc
+      - name: Install NASM
+        run: |
+          choco install nasm
+          echo "C:\Program Files\NASM" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
-    - name: Package agent.
-      run: make build-agent-x86_64-windows
+      - name: Install Windows target
+        run: rustup target add x86_64-pc-windows-msvc
 
-    - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
-      shell: bash
+      - name: Package agent.
+        run: make build-agent-x86_64-windows
 
-    - uses: actions/upload-artifact@v4
-      with:
-        name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-windows.zip
-        path: "dist/cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-windows.zip"
-        retention-days: 1
+      - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
+        shell: bash
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-windows.zip
+          path: "dist/cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-windows.zip"
+          retention-days: 1
 
   release:
     runs-on: ubuntu-latest
@@ -237,75 +240,75 @@ jobs:
       - build-aarch64-macos
       - build-x86_64-windows
     steps:
-    - name: Checkout repository.
-      uses: actions/checkout@v4
+      - name: Checkout repository.
+        uses: actions/checkout@v4
 
-    - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
+      - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
-    - uses: actions/download-artifact@v4
-      with:
-        name: cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-linux.tar.xz
-        path: dist/
+      - uses: actions/download-artifact@v4
+        with:
+          name: cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-linux.tar.xz
+          path: dist/
 
-    - uses: actions/download-artifact@v4
-      with:
-        name: cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-macos.tar.xz
-        path: dist/
+      - uses: actions/download-artifact@v4
+        with:
+          name: cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-macos.tar.xz
+          path: dist/
 
-    - uses: actions/download-artifact@v4
-      with:
-        name: cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-macos.dmg
-        path: dist/
+      - uses: actions/download-artifact@v4
+        with:
+          name: cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-macos.dmg
+          path: dist/
 
-    - uses: actions/download-artifact@v4
-      with:
-        name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-linux.tar.xz
-        path: dist/
+      - uses: actions/download-artifact@v4
+        with:
+          name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-linux.tar.xz
+          path: dist/
 
-    - uses: actions/download-artifact@v4
-      with:
-        name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-macos.tar.xz
-        path: dist/
+      - uses: actions/download-artifact@v4
+        with:
+          name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-macos.tar.xz
+          path: dist/
 
-    - uses: actions/download-artifact@v4
-      with:
-        name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-macos.dmg
-        path: dist/
+      - uses: actions/download-artifact@v4
+        with:
+          name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-macos.dmg
+          path: dist/
 
-    - uses: actions/download-artifact@v4
-      with:
-        name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-windows.zip
-        path: dist/
+      - uses: actions/download-artifact@v4
+        with:
+          name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-windows.zip
+          path: dist/
 
-    - uses: actions/download-artifact@v4
-      with:
-        name: cluvio-agent_${{ env.AGENT_VERSION }}_amd64.deb
-        path: dist/
+      - uses: actions/download-artifact@v4
+        with:
+          name: cluvio-agent_${{ env.AGENT_VERSION }}_amd64.deb
+          path: dist/
 
-    - uses: actions/download-artifact@v4
-      with:
-        name: cluvio-agent_${{ env.AGENT_VERSION }}_arm64.deb
-        path: dist/
+      - uses: actions/download-artifact@v4
+        with:
+          name: cluvio-agent_${{ env.AGENT_VERSION }}_arm64.deb
+          path: dist/
 
-    - uses: actions/download-artifact@v4
-      with:
-        name: cluvio-agent-${{ env.AGENT_VERSION }}-1.x86_64.rpm
-        path: dist/
+      - uses: actions/download-artifact@v4
+        with:
+          name: cluvio-agent-${{ env.AGENT_VERSION }}-1.x86_64.rpm
+          path: dist/
 
-    - uses: actions/download-artifact@v4
-      with:
-        name: cluvio-agent-${{ env.AGENT_VERSION }}-1.aarch64.rpm
-        path: dist/
+      - uses: actions/download-artifact@v4
+        with:
+          name: cluvio-agent-${{ env.AGENT_VERSION }}-1.aarch64.rpm
+          path: dist/
 
-    - name: Create release.
-      shell: bash
-      run: |
-        (cd dist && sha256sum *.* > CHECKSUMS)
-        gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
-        gh release create -d -t "v${{ env.AGENT_VERSION }}" -F changelog/v${{ env.AGENT_VERSION }}.md "v${{ env.AGENT_VERSION }}" dist/*
+      - name: Create release.
+        shell: bash
+        run: |
+          (cd dist && sha256sum *.* > CHECKSUMS)
+          gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
+          gh release create -d -t "v${{ env.AGENT_VERSION }}" -F changelog/v${{ env.AGENT_VERSION }}.md "v${{ env.AGENT_VERSION }}" dist/*
 
-    - name: Release on docker hub.
-      run: make docker-agent-release
-      env:
-        DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
-        DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+      - name: Release on docker hub.
+        run: make docker-agent-release
+        env:
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
