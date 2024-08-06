@@ -56,8 +56,8 @@ build-agent-x86_64-macos: clean
 	scripts/macos/apple-notarize.sh build/cluvio-agent cluvio-agent-$(AGENT_VERSION)-x86_64-macos
 	tar caf dist/cluvio-agent-$(AGENT_VERSION)-x86_64-macos.tar.xz -C build/ cluvio-agent
 
-build-agent-aarch64-macos: export SDKROOT = $(shell xcrun -sdk macosx11.1 --show-sdk-path)
-build-agent-aarch64-macos: export MACOSX_DEPLOYMENT_TARGET = $(shell xcrun -sdk macosx11.1 --show-sdk-platform-version)
+build-agent-aarch64-macos: export SDKROOT = $(shell xcrun -sdk macosx12.3 --show-sdk-path)
+build-agent-aarch64-macos: export MACOSX_DEPLOYMENT_TARGET = $(shell xcrun -sdk macosx12.3 --show-sdk-platform-version)
 build-agent-aarch64-macos: clean
 	mkdir -p build dist
 	cargo install \

@@ -55,11 +55,11 @@ jobs:
     - name: Package agent (rpm).
       run: make rpm-agent-x86_64
 
-    - name: Package agent (docker).
-      run: make docker-agent-x86_64-linux
-      env:
-        DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
-        DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+    # - name: Package agent (docker).
+    #   run: make docker-agent-x86_64-linux
+    #   env:
+    #     DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+    #     DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
     - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
@@ -109,11 +109,11 @@ jobs:
     - name: Package agent (rpm).
       run: make rpm-agent-aarch64
 
-    - name: Package agent (docker).
-      run: make docker-agent-aarch64-linux
-      env:
-        DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
-        DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+    # - name: Package agent (docker).
+    #   run: make docker-agent-aarch64-linux
+    #   env:
+    #     DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+    #     DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
     - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
