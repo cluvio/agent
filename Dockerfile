@@ -3,9 +3,9 @@
 ####################################################
 
 ARG ARCH=
-FROM ${ARCH}alpine:3.17
+FROM ${ARCH}alpine:3.19
 
-MAINTAINER Cluvio <hi@cluvio.com>
+LABEL org.opencontainers.image.authors="hi@cluvio.com"
 
 RUN addgroup -S cluvio && adduser -S cluvio -G cluvio
 

@@ -85,6 +85,9 @@ jobs:
       - name: Checkout repository.
         uses: actions/checkout@v4
 
+      - name: Show Docker Builders
+        run: docker buildx ls
+
       - name: Install cross
         run: |
           cargo install cross --git https://github.com/cross-rs/cross

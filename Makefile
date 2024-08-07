@@ -75,14 +75,14 @@ docker-agent-x86_64-linux: build-agent-x86_64-linux
 	test -n "$(DOCKER_HUB_USERNAME)" # $$DOCKER_HUB_USERNAME
 	test -n "$(DOCKER_HUB_ACCESS_TOKEN)" # $$DOCKER_HUB_ACCESS_TOKEN
 	@echo "${DOCKER_HUB_ACCESS_TOKEN}" | docker login --username $(DOCKER_HUB_USERNAME) --password-stdin
-	docker build -t cluvio/agent:$(AGENT_VERSION)-x86_64 .
+	docker build --platform linux/amd64 -t cluvio/agent:$(AGENT_VERSION)-x86_64 .
 	docker push --all-tags cluvio/agent
 
 docker-agent-aarch64-linux: build-agent-aarch64-linux
 	test -n "$(DOCKER_HUB_USERNAME)" # $$DOCKER_HUB_USERNAME
 	test -n "$(DOCKER_HUB_ACCESS_TOKEN)" # $$DOCKER_HUB_ACCESS_TOKEN
 	@echo "${DOCKER_HUB_ACCESS_TOKEN}" | docker login --username $(DOCKER_HUB_USERNAME) --password-stdin
-	docker build --build-arg ARCH=arm64v8/ -t cluvio/agent:$(AGENT_VERSION)-arm64 .
+	docker build --platform linux/arm64 --build-arg ARCH=arm64v8/ -t cluvio/agent:$(AGENT_VERSION)-arm64 .
 	docker push --all-tags cluvio/agent
 
 docker-agent-release:
