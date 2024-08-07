@@ -85,10 +85,15 @@ jobs:
       - name: Checkout repository.
         uses: actions/checkout@v4
 
+      - name: Install Docker build dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y qemu-user-static binfmt-support
+
       - name: Show Docker Builders
         run: docker buildx ls
 
-      - name: Install cross
+      - name: Install cross-rs/cross
         run: |
           cargo install cross --git https://github.com/cross-rs/cross
 
