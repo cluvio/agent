@@ -57,7 +57,12 @@ stop-on-upgrade = false
 [package.metadata.generate-rpm]
 post_install_script  = "systemctl enable cluvio-agent.service"
 pre_uninstall_script = "systemctl disable cluvio-agent.service"
-# requires = []
+# Disable shared library detection completely. cluvio-agent is fully self-contained.
+# Leaving this at the default would result in a "blank line" dependency entry
+# causing rpm -i to fail with a bogus unsatisfied dependency [1].
+#
+# [1]: https://github.com/cluvio/TheUpsideDown/issues/208
+auto-req             = "no"
 
 [[package.metadata.generate-rpm.assets]]
 source = "target/release/cluvio-agent"
