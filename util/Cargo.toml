@@ -9,8 +9,8 @@ base64         = "0.22.1"
 humantime      = "2.1"
 futures        = "0.3.28"
 log            = { version = "0.1.37", package = "tracing" }
-minicbor       = { version = "0.24.2", features = ["derive", "std", "half"] }
-minicbor-io    = { version = "0.19.0", features = ["async-io"] }
+minicbor       = { version = "0.25.1", features = ["derive", "std", "half"] }
+minicbor-io    = { version = "0.20.1", features = ["async-io"] }
 rand_core      = "0.6.4"
 rustls-pemfile = "2.1.2"
 sealed-boxes   = { path = "../sealed-boxes" }

@@ -14,7 +14,7 @@ futures      = "0.3.28"
 ipnet        = { version = "2.7", features = ["serde"] }
 humantime    = "2.1"
 log          = { version = "0.1.37", package = "tracing" }
-minicbor-io  = { version = "0.19.0", features = ["async-io"] }
+minicbor-io  = { version = "0.20.1", features = ["async-io"] }
 protocol     = { path = "../protocol" }
 scopeguard   = "1.1.0"
 sealed-boxes = { path = "../sealed-boxes" }
