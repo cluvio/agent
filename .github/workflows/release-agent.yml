@@ -136,7 +136,7 @@ jobs:
           retention-days: 1
 
   build-x86_64-macos:
-    runs-on: macos-12
+    runs-on: macos-13
     needs:
       - check-release
     steps:
@@ -171,7 +171,7 @@ jobs:
           retention-days: 1
 
   build-aarch64-macos:
-    runs-on: macos-12
+    runs-on: macos-13
     needs:
       - check-release
     steps:
@@ -182,10 +182,10 @@ jobs:
         run: rustup target add aarch64-apple-darwin
 
       - name: Select SDK Version
-        run: sudo xcode-select -s "/Applications/Xcode_14.0.1.app" # macosx12.3
+        run: sudo xcode-select -s "/Applications/Xcode_15.2.0.app"
 
       - name: Show SDK Version
-        run: xcrun --show-sdk-platform-version # macosx12.3 = MACOSX_DEPLOYMENT_TARGET
+        run: xcrun --show-sdk-platform-version
 
       - name: Package agent.
         run: make build-agent-aarch64-macos
