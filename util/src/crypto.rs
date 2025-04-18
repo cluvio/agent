@@ -3,7 +3,7 @@ use chacha20poly1305::aead::{AeadInPlace, Error, KeyInit};
 use minicbor::{Decode, Encode};
 use minicbor::decode::{self, Decoder};
 use minicbor::encode::{self, Encoder, Write};
-use rand_core::RngCore;
+use rand_core::TryRngCore;
 use std::convert::TryFrom;
 
 #[derive(Clone)]
@@ -15,7 +15,7 @@ pub struct Nonce(chacha20poly1305::XNonce);
 impl Nonce {
     pub fn fresh() -> Self {
         let mut n = [0; 24];
-        rand_core::OsRng.fill_bytes(&mut n);
+        rand_core::OsRng.try_fill_bytes(&mut n).expect("OS RNG not available or misconfigured");
         Nonce::from(n)
     }
 }
@@ -23,7 +23,7 @@ impl Nonce {
 impl Key {
     pub fn fresh() -> Self {
         let mut k = [0; 32];
-        rand_core::OsRng.fill_bytes(&mut k);
+        rand_core::OsRng.try_fill_bytes(&mut k).expect("OS RNG not available or misconfigured");
         Key::from(k)
     }
 

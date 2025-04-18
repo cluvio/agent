@@ -77,17 +77,17 @@ impl fmt::Display for DnsPattern {
 #[cfg(test)]
 mod tests {
     use quickcheck::{quickcheck, Arbitrary, Gen, TestResult};
-    use rand::{distributions::{Alphanumeric, DistString}, prelude::*};
+    use rand::{distr::{Alphanumeric, SampleString}, prelude::*};
     use std::convert::TryFrom;
     use super::DnsPattern;
 
     impl Arbitrary for DnsPattern {
         fn arbitrary(_: &mut Gen) -> Self {
-            let mut r = rand::thread_rng();
+            let mut r = rand::rng();
             let mut v = Vec::new();
 
-            for _ in 0 .. r.gen_range(0 .. 16) {
-                let n = r.gen_range(1 .. 16);
+            for _ in 0 .. r.random_range(0 .. 16) {
+                let n = r.random_range(1 .. 16);
                 v.push(Alphanumeric.sample_string(&mut r, n))
             }
 

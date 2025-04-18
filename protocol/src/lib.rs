@@ -3,7 +3,7 @@ mod agentid;
 use sealed_boxes::Data;
 use minicbor::{Decode, Encode};
 use minicbor::bytes::ByteSlice;
-use rand_core::{OsRng, RngCore};
+use rand_core::{OsRng, TryRngCore};
 use serde::Serialize;
 use std::borrow::{Borrow, Cow};
 use std::fmt;
@@ -331,7 +331,7 @@ pub struct Id(#[n(0)] u64);
 impl Id {
     /// Get a random Id.
     pub fn fresh() -> Self {
-        Id(OsRng.next_u64())
+        Id(OsRng.try_next_u64().expect("OS RNG not available or misconfigured"))
     }
 
     /// Get the numeric value of this ID.

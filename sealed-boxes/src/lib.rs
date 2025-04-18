@@ -8,7 +8,7 @@
 
 use crypto_box::{ChaChaBox, aead::AeadInPlace};
 use minicbor::{Decode, Encode};
-use rand_core::{OsRng, RngCore};
+use rand_core::{OsRng, TryRngCore};
 use std::convert::TryInto;
 
 pub use crypto_box::{PublicKey, SecretKey, aead::Error};
@@ -54,7 +54,7 @@ pub fn gen_secret_key_legacy() -> SecretKeyLegacy {
 /// Generate a new random array.
 pub fn fresh_array<const N: usize>() -> [u8; N] {
     let mut a = [0; N];
-    OsRng.fill_bytes(&mut a);
+    OsRng.try_fill_bytes(&mut a).expect("OS RNG not available or misconfigured");
     a
 }
 
