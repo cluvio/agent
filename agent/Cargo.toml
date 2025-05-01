@@ -22,7 +22,7 @@ serde        = { version = "1.0.219", features = ["derive"] }
 socket2      = { version = "0.5.9", features = ["all"] }
 thiserror    = "2.0"
 tokio-rustls = { version = "0.26", default-features = false, features = ["logging", "aws-lc-rs"] }
-tokio-util   = { version = "0.7.14", features = ["compat"] }
+tokio-util   = { version = "0.7.15", features = ["compat"] }
 util         = { path = "../util" }
 webpki-roots = "0.26"
 yamux        = "0.10.1"
