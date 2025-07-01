@@ -6,7 +6,7 @@ edition     = "2021"
 description = "Cluvio GmbH connection agent"
 
 [dependencies]
-clap         = { version = "4.5.36", features = ["derive"] }
+clap         = { version = "4.5.40", features = ["derive"] }
 config       = { version = "0.15", default-features = false, features = ["toml"] }
 directories  = "6.0"
 either       = "1.15"
