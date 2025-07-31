@@ -7,7 +7,7 @@ edition = "2021"
 [dependencies]
 blake2b_simd = "1.0.3"
 crypto_box   = { version = "0.9.1", features = ["std", "chacha20"] }
-minicbor     = { version = "0.26.4", features = ["derive", "std", "half"] }
+minicbor     = { version = "2.0", features = ["derive", "std", "half"] }
 rand_core    = { version = "0.9.3", features = ["os_rng"] }
 
 crypto_box_legacy = { package = "crypto_box", version = "0.8.2", features = ["std"] }
