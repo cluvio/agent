@@ -25,7 +25,7 @@ tokio-rustls = { version = "0.26", default-features = false, features = ["loggin
 tokio-util   = { version = "0.7.15", features = ["compat"] }
 util         = { path = "../util" }
 webpki-roots = "1.0"
-yamux        = "0.10.1"
+yamux        = "0.13.6"
 
 [dependencies.tokio]
 version          = "1.47"
