@@ -136,7 +136,7 @@ jobs:
           retention-days: 1
 
   build-x86_64-macos:
-    runs-on: macos-13
+    runs-on: macos-14
     needs:
       - check-release
     steps:
@@ -171,7 +171,7 @@ jobs:
           retention-days: 1
 
   build-aarch64-macos:
-    runs-on: macos-13
+    runs-on: macos-14
     needs:
       - check-release
     steps:
