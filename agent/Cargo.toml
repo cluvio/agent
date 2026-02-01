@@ -19,7 +19,7 @@ protocol     = { path = "../protocol" }
 scopeguard   = "1.2.0"
 sealed-boxes = { path = "../sealed-boxes" }
 serde        = { version = "1.0.228", features = ["derive"] }
-socket2      = { version = "0.6.1", features = ["all"] }
+socket2      = { version = "0.6.2", features = ["all"] }
 thiserror    = "2.0"
 tokio-rustls = { version = "0.26", default-features = false, features = ["logging", "aws-lc-rs"] }
 tokio-util   = { version = "0.7.18", features = ["compat"] }
