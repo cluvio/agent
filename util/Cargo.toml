@@ -11,7 +11,7 @@ futures        = "0.3.31"
 log            = { version = "0.1.44", package = "tracing" }
 minicbor       = { version = "2.1", features = ["derive", "std", "half"] }
 minicbor-io    = { version = "0.23.0", features = ["async-io"] }
-rand_core      = { version = "0.9.3", features = ["os_rng"] }
+rand_core      = { version = "0.9.5", features = ["os_rng"] }
 rustls-pemfile = "2.2"
 sealed-boxes   = { path = "../sealed-boxes" }
 serde          = { version = "1.0.219", features = ["derive"] }

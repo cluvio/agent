@@ -235,7 +235,7 @@ checksum = "a1d728cc89cf3aee9ff92b05e62b19ee65a02b5702cff7d5a377e32c6ae29d8d"
 
 [[package]]
 name = "cluvio-agent"
-version = "1.2.1"
+version = "1.3.0"
 dependencies = [
  "clap",
  "config",
@@ -875,7 +875,7 @@ dependencies = [
  "minicbor",
  "nohash-hasher",
  "quickcheck",
- "rand_core 0.9.3",
+ "rand_core 0.9.5",
  "sealed-boxes",
  "serde",
  "util",
@@ -925,7 +925,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6db2770f06117d490610c7488547d543617b21bfa07796d7a12f6f1bd53850d1"
 dependencies = [
  "rand_chacha 0.9.0",
- "rand_core 0.9.3",
+ "rand_core 0.9.5",
 ]
 
 [[package]]
@@ -945,7 +945,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d3022b5f1df60f26e1ffddd6c66e8aa15de382ae63b3a0c1bfc0e4d3e3f325cb"
 dependencies = [
  "ppv-lite86",
- "rand_core 0.9.3",
+ "rand_core 0.9.5",
 ]
 
 [[package]]
@@ -965,9 +965,9 @@ dependencies = [
 
 [[package]]
 name = "rand_core"
-version = "0.9.3"
+version = "0.9.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "99d9a13982dcf210057a8a78572b2217b667c3beacbf3a0d8b454f6f82837d38"
+checksum = "76afc826de14238e6e8c374ddcc1fa19e374fd8dd986b0d2af0d02377261d83c"
 dependencies = [
  "getrandom 0.3.4",
 ]
@@ -1113,7 +1113,7 @@ dependencies = [
  "crypto_box 0.9.1",
  "minicbor",
  "quickcheck",
- "rand_core 0.9.3",
+ "rand_core 0.9.5",
 ]
 
 [[package]]
@@ -1468,7 +1468,7 @@ dependencies = [
  "humantime",
  "minicbor",
  "minicbor-io",
- "rand_core 0.9.3",
+ "rand_core 0.9.5",
  "rustls-pemfile",
  "sealed-boxes",
  "serde",
