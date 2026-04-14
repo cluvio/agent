@@ -38,7 +38,7 @@ features = ["env-filter", "json"]
 
 [dev-dependencies]
 quickcheck = "1.0.3"
-rand       = "0.9.2"
+rand       = "0.9.3"
 
 # Debian archive metadata
 
