@@ -1,5 +1,4 @@
 use crate::NonEmpty;
-use crate::crypto;
 use sealed_boxes::SecretKey;
 use serde::{Deserialize, Deserializer, de::Error};
 use serde::{Serialize, Serializer};
@@ -62,11 +61,6 @@ where
 {
     let v = decode_base64(d)?;
     <[u8; N]>::try_from(v).map_err(|_| Error::custom("invalid array length"))
-}
-
-/// Decode a base64-encoded, symmetric encryption key.
-pub fn decode_crypto_key<'de, D: Deserializer<'de>>(d: D) -> Result<crypto::Key, D::Error> {
-    decode_base64_array(d).map(crypto::Key::from)
 }
 
 /// Decode PEM-encoded private key.

@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository.
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
@@ -33,7 +33,7 @@ jobs:
       - check-release
     steps:
       - name: Checkout repository.
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install cross
         run: |
@@ -59,19 +59,19 @@ jobs:
 
       - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-linux.tar.xz
           path: "dist/cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-linux.tar.xz"
           retention-days: 1
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: cluvio-agent_${{ env.AGENT_VERSION }}_amd64.deb
           path: "target/x86_64-unknown-linux-musl/debian/cluvio-agent_${{ env.AGENT_VERSION }}_amd64.deb"
           retention-days: 1
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: cluvio-agent-${{ env.AGENT_VERSION }}-1.x86_64.rpm
           path: "target/x86_64-unknown-linux-musl/generate-rpm/cluvio-agent-${{ env.AGENT_VERSION }}-1.x86_64.rpm"
@@ -83,7 +83,7 @@ jobs:
       - check-release
     steps:
       - name: Checkout repository.
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install Docker build dependencies
         run: |
@@ -117,19 +117,19 @@ jobs:
 
       - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-linux.tar.xz
           path: "dist/cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-linux.tar.xz"
           retention-days: 1
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: cluvio-agent_${{ env.AGENT_VERSION }}_arm64.deb
           path: "target/aarch64-unknown-linux-musl/debian/cluvio-agent_${{ env.AGENT_VERSION }}_arm64.deb"
           retention-days: 1
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: cluvio-agent-${{ env.AGENT_VERSION }}-1.aarch64.rpm
           path: "target/aarch64-unknown-linux-musl/generate-rpm/cluvio-agent-${{ env.AGENT_VERSION }}-1.aarch64.rpm"
@@ -141,7 +141,7 @@ jobs:
       - check-release
     steps:
       - name: Checkout repository.
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install Apple Darwin target
         run: rustup target add x86_64-apple-darwin
@@ -161,13 +161,13 @@ jobs:
 
       - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-macos.tar.xz
           path: "dist/cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-macos.tar.xz"
           retention-days: 1
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-macos.dmg
           path: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-macos.dmg
@@ -179,7 +179,7 @@ jobs:
       - check-release
     steps:
       - name: Checkout repository.
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install Apple Darwin target
         run: rustup target add aarch64-apple-darwin
@@ -205,13 +205,13 @@ jobs:
 
       - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-macos.tar.xz
           path: "dist/cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-macos.tar.xz"
           retention-days: 1
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-macos.dmg
           path: cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-macos.dmg
@@ -223,7 +223,7 @@ jobs:
       - check-release
     steps:
       - name: Checkout repository.
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install NASM
         run: |
@@ -239,7 +239,7 @@ jobs:
       - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
         shell: bash
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-windows.zip
           path: "dist/cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-windows.zip"
@@ -255,61 +255,61 @@ jobs:
       - build-x86_64-windows
     steps:
       - name: Checkout repository.
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-linux.tar.xz
           path: dist/
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-macos.tar.xz
           path: dist/
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: cluvio-agent-${{ env.AGENT_VERSION }}-aarch64-macos.dmg
           path: dist/
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-linux.tar.xz
           path: dist/
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-macos.tar.xz
           path: dist/
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-macos.dmg
           path: dist/
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: cluvio-agent-${{ env.AGENT_VERSION }}-x86_64-windows.zip
           path: dist/
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: cluvio-agent_${{ env.AGENT_VERSION }}_amd64.deb
           path: dist/
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: cluvio-agent_${{ env.AGENT_VERSION }}_arm64.deb
           path: dist/
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: cluvio-agent-${{ env.AGENT_VERSION }}-1.x86_64.rpm
           path: dist/
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: cluvio-agent-${{ env.AGENT_VERSION }}-1.aarch64.rpm
           path: dist/

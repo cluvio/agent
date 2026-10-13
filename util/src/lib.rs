@@ -1,5 +1,4 @@
 pub mod base64;
-pub mod crypto;
 pub mod io;
 pub mod serde;
 pub mod time;
