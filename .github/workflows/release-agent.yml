@@ -136,7 +136,7 @@ jobs:
           retention-days: 1
 
   build-x86_64-macos:
-    runs-on: macos-14
+    runs-on: macos-15
     needs:
       - check-release
     steps:
@@ -156,6 +156,9 @@ jobs:
           APPLE_DEV_PASSWORD: ${{ secrets.APPLE_DEV_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
+      - name: Show minimum macOS version
+        run: otool -l build/cluvio-agent | grep -A4 LC_BUILD_VERSION
+
       - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
       - uses: actions/upload-artifact@v6
@@ -171,7 +174,7 @@ jobs:
           retention-days: 1
 
   build-aarch64-macos:
-    runs-on: macos-14
+    runs-on: macos-15
     needs:
       - check-release
     steps:
@@ -182,7 +185,7 @@ jobs:
         run: rustup target add aarch64-apple-darwin
 
       - name: Select SDK Version
-        run: sudo xcode-select -s "/Applications/Xcode_15.2.0.app"
+        run: sudo xcode-select -s "/Applications/Xcode_16.0.app"
 
       - name: Show SDK Version
         run: xcrun --show-sdk-platform-version
@@ -196,6 +199,9 @@ jobs:
           APPLE_DEV_ACCOUNT: ${{ secrets.APPLE_DEV_ACCOUNT }}
           APPLE_DEV_PASSWORD: ${{ secrets.APPLE_DEV_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+
+      - name: Show minimum macOS version
+        run: otool -l build/cluvio-agent | grep -A4 LC_BUILD_VERSION
 
       - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
