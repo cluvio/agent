@@ -92,4 +92,46 @@ be seen via `journalctl`, e.g. `journalctl -u cluvio-agent.service`.
 If [homebrew][1] is used for installation, the agent can be managed with the `services`
 subcommand, e.g. `brew services start cluvio-agent`.
 
+## Releasing
+
+Releases are built by the [release-agent](/.github/workflows/release-agent.yml) workflow.
+
+### MacOS code signing
+
+The MacOS binaries are signed with the Developer ID Application certificate of Cluvio GmbH
+and notarized by Apple ([apple-codesign.sh](/scripts/macos/apple-codesign.sh),
+[apple-notarize.sh](/scripts/macos/apple-notarize.sh)). They use these repository secrets:
+
+- __`MACOS_CERTIFICATE`__: the certificate and its private key, a `.p12` file, base64-encoded.
+- __`MACOS_CERTIFICATE_PWD`__: the password of that `.p12` file.
+- __`MACOS_DEV_IDENTITY`__: the identity `codesign` signs with,
+`Developer ID Application: Cluvio GmbH (<team ID>)`.
+- __`APPLE_DEV_ACCOUNT`__, __`APPLE_DEV_PASSWORD`__ (an app-specific password) and
+__`APPLE_TEAM_ID`__: the Apple account the notarization is submitted with.
+
+A Developer ID certificate is valid for five years. Once it has expired, the build fails at
+signing with `CSSMERR_TP_CERT_EXPIRED` and `0 valid identities found`, followed by
+`error: The specified item could not be found in the keychain.` To renew it, on a Mac:
+
+1. Create a new Developer ID Application certificate. Only the Account Holder of the Apple
+Developer team can. Either in Xcode, under Settings → Accounts → the Cluvio team → Manage
+Certificates → __+__ → *Developer ID Application*, which puts the certificate and its private
+key into the login keychain; or on developer.apple.com, under Certificates → __+__ →
+*Developer ID Application* (G2 Sub-CA), with a certificate signing request made in Keychain
+Access (Certificate Assistant → Request a Certificate from a Certificate Authority), and the
+downloaded `.cer` then opened to add it to the keychain.
+2. Export it from Keychain Access (login → My Certificates → the new
+`Developer ID Application: Cluvio GmbH (…)`, with its private key) as a `.p12` file, with a
+password.
+3. Replace the two secrets:
+   ```bash
+   base64 -i DeveloperID.p12 | gh secret set MACOS_CERTIFICATE -R cluvio/agent
+   gh secret set MACOS_CERTIFICATE_PWD -R cluvio/agent   # prompts for the password
+   ```
+4. Run the release workflow again.
+
+`MACOS_DEV_IDENTITY` stays as it is: a new certificate for the same team has the same name.
+The notarization secrets do not depend on the certificate. Binaries released before the
+certificate expired keep working, as they carry a secure timestamp from their signing.
+
 [1]: https://brew.sh/
