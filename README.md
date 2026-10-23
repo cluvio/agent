@@ -104,8 +104,9 @@ and notarized by Apple ([apple-codesign.sh](/scripts/macos/apple-codesign.sh),
 
 - __`MACOS_CERTIFICATE`__: the certificate and its private key, a `.p12` file, base64-encoded.
 - __`MACOS_CERTIFICATE_PWD`__: the password of that `.p12` file.
-- __`MACOS_DEV_IDENTITY`__: the identity `codesign` signs with,
-`Developer ID Application: Cluvio GmbH (<team ID>)`.
+- __`MACOS_DEV_IDENTITY`__: the identity `codesign` signs with, by its name,
+`Developer ID Application: Cluvio GmbH (<team ID>)`. The team ID is in the certificate's name
+in Keychain Access, and under Membership details on developer.apple.com.
 - __`APPLE_DEV_ACCOUNT`__, __`APPLE_DEV_PASSWORD`__ (an app-specific password) and
 __`APPLE_TEAM_ID`__: the Apple account the notarization is submitted with.
 
@@ -130,7 +131,11 @@ password.
    ```
 4. Run the release workflow again.
 
-`MACOS_DEV_IDENTITY` stays as it is: a new certificate for the same team has the same name.
+`MACOS_DEV_IDENTITY` stays as it is: a new certificate for the same team has the same name,
+and the build's keychain only ever holds the one certificate. `codesign` also accepts a
+certificate's SHA-1 hash there, but a hash changes with every certificate: with one in the secret,
+the build fails after a renewal with `<hash>: no identity found` until it is replaced. Use the
+name.
 The notarization secrets do not depend on the certificate. Binaries released before the
 certificate expired keep working, as they carry a secure timestamp from their signing.
 

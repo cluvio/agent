@@ -28,5 +28,17 @@ xcrun notarytool submit \
     --wait \
     "${dmg_name}.dmg"
 
-xcrun stapler staple "${dmg_name}.dmg"
+# Stapling fetches the ticket from Apple's servers, which right after notarization can fail on
+# a dropped connection or a ticket not yet available (error 68, 65): try again before giving up.
+for attempt in 1 2 3 4 5; do
+    if xcrun stapler staple "${dmg_name}.dmg"; then
+        break
+    fi
+    if [ "$attempt" -eq 5 ]; then
+        echo "Stapling failed after $attempt attempts"
+        exit 1
+    fi
+    echo "Stapling failed (attempt $attempt), trying again in 30 seconds"
+    sleep 30
+done
 
