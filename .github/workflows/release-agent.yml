@@ -157,7 +157,8 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
       - name: Show minimum macOS version
-        run: otool -l build/cluvio-agent | grep -A4 LC_BUILD_VERSION
+        # LC_BUILD_VERSION from macOS 10.14 on; a binary for an older minimum has LC_VERSION_MIN_MACOSX.
+        run: otool -l build/cluvio-agent | grep -A4 -E 'LC_BUILD_VERSION|LC_VERSION_MIN_MACOSX'
 
       - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
@@ -201,7 +202,8 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
       - name: Show minimum macOS version
-        run: otool -l build/cluvio-agent | grep -A4 LC_BUILD_VERSION
+        # LC_BUILD_VERSION from macOS 10.14 on; a binary for an older minimum has LC_VERSION_MIN_MACOSX.
+        run: otool -l build/cluvio-agent | grep -A4 -E 'LC_BUILD_VERSION|LC_VERSION_MIN_MACOSX'
 
       - run: echo AGENT_VERSION=$(make agent-version) >> $GITHUB_ENV
 
