@@ -92,6 +92,36 @@ be seen via `journalctl`, e.g. `journalctl -u cluvio-agent.service`.
 If [homebrew][1] is used for installation, the agent can be managed with the `services`
 subcommand, e.g. `brew services start cluvio-agent`.
 
+### Running from a source checkout with Docker
+
+The [Dockerfile](/Dockerfile) packages a static Linux binary from `build/cluvio-agent`. To build
+that binary for the host's own architecture without a local Rust toolchain, compile it in a
+`rust:alpine` container, then build and run the image:
+
+```bash
+docker run --rm -v "$PWD":/src -w /src \
+  -e CARGO_TARGET_DIR=target/docker \
+  -e CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER=cc \
+  rust:alpine sh -c 'apk add -q musl-dev perl make cmake clang && cargo build --release --locked -p cluvio-agent'
+mkdir -p build && cp target/docker/release/cluvio-agent build/cluvio-agent
+
+docker build -t cluvio-agent:dev .
+docker run --rm -e AGENT_SECRET_KEY='<secret-key>' -e LOCATION=eu cluvio-agent:dev
+```
+
+The linker variable overrides [.cargo/config.toml](/.cargo/config.toml), which names the cross-compiler
+used by `cross`, and `target/docker` keeps the Linux build apart from a native one in `target/`.
+
+Instead of a configuration file, the image takes the agent's settings as environment variables
+and writes the configuration itself:
+
+- __`AGENT_SECRET_KEY`__: the `secret-key` value from the configuration file downloaded from Cluvio.
+- __`LOCATION`__: `eu` or `us`, the region of the Cluvio account. Alternatively,
+__`AGENT_GATEWAY_HOST`__ names the gateway host directly.
+
+A database on the same machine is reached through `host.docker.internal` (with
+`--add-host host.docker.internal:host-gateway` on Linux), not through `localhost`.
+
 ## Releasing
 
 Releases are built by the [release-agent](/.github/workflows/release-agent.yml) workflow.

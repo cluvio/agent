@@ -3,7 +3,7 @@
 ####################################################
 
 ARG ARCH=
-FROM ${ARCH}alpine:3.19
+FROM ${ARCH}alpine:3.24
 
 LABEL org.opencontainers.image.authors="hi@cluvio.com"
 
